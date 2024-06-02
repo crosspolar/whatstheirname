@@ -17,10 +17,11 @@ void main() {
         home: PersonOverview(
           persons: List.generate(
             5,
-            (i) => Person(
-              firstName: 'Person $i',
-              description: 'A description of Person $i',
-            ),
+                (i) =>
+                Person(
+                  firstName: 'Person $i',
+                  description: 'A description of Person $i',
+                ),
           ),
         ),
       ),
@@ -74,10 +75,11 @@ class PersonOverviewState extends State<PersonOverview> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DetailScreen(
-                    person: persons[index],
-                    otherPersons: persons,
-                  ),
+                  builder: (context) =>
+                      DetailScreen(
+                        person: persons[index],
+                        otherPersons: persons,
+                      ),
                 ),
               );
             },
@@ -127,19 +129,21 @@ class DetailScreen extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Text(person.description),
+            Text(person.gender.label),
             Expanded(
               child: ListView.builder(
                 itemCount: allRelations.length,
-                itemBuilder: (context, index) => ListTile(
-                  leading: const Icon(Icons.person_2_outlined),
-                  title: Text(allRelations[index].toString()),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () {
-                      relationships.remove(allRelations[index]);
-                    },
-                  ),
-                ),
+                itemBuilder: (context, index) =>
+                    ListTile(
+                      leading: const Icon(Icons.supervisor_account),
+                      title: Text(allRelations[index].toString()),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () {
+                          relationships.remove(allRelations[index]);
+                        },
+                      ),
+                    ),
               ),
             ),
           ],
@@ -175,7 +179,9 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
   final _formKey = GlobalKey<FormState>();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
+
   bool isUpdate = false;
+  Gender? selectedGender;
 
   @override
   void initState() {
@@ -184,6 +190,7 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
     isUpdate = widget.person.id != null;
     firstNameController.text = widget.person.firstName;
     lastNameController.text = widget.person.lastName;
+    selectedGender = widget.person.gender;
   }
 
   @override
@@ -211,12 +218,26 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                     decoration: const InputDecoration(hintText: 'Last Name'),
                     controller: lastNameController,
                   ),
+                  DropdownButton<Gender>(
+                      value: selectedGender,
+                      onChanged: (Gender? gender) {
+                        setState(() {
+                          selectedGender = gender;
+                        });
+                      },
+                      items: Gender.values.map((Gender gender) {
+                        return DropdownMenuItem<Gender>(
+                            value: gender,
+                            child: Text(gender.label));
+                      }).toList(),
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // Validate returns true if the form is valid, or false otherwise.
                       if (_formKey.currentState!.validate()) {
                         final p = Person(
                             id: widget.person.id,
+                            gender: selectedGender!,
                             firstName: firstNameController.text,
                             lastName: lastNameController.text);
                         Navigator.pop(context, p);
@@ -324,7 +345,7 @@ class _AddRelationshipState extends State<AddRelationship> {
                       });
                     },
                     dropdownMenuEntries: persons.map<DropdownMenuEntry<Person>>(
-                      (Person icon) {
+                          (Person icon) {
                         return DropdownMenuEntry<Person>(
                           value: icon,
                           label: icon.fullName(),
@@ -341,13 +362,13 @@ class _AddRelationshipState extends State<AddRelationship> {
               onPressed: (selectedRelation == null || selectedPerson == null)
                   ? null
                   : () {
-                      // Validate returns true if the form is valid, or false otherwise.
-                      final r = Relationship(
-                          personA: widget.currentPerson,
-                          personB: selectedPerson!,
-                          relation: selectedRelation!);
-                      Navigator.pop(context, r);
-                    },
+                // Validate returns true if the form is valid, or false otherwise.
+                final r = Relationship(
+                    personA: widget.currentPerson,
+                    personB: selectedPerson!,
+                    relation: selectedRelation!);
+                Navigator.pop(context, r);
+              },
               child: const Text('Submit'),
             ),
           ],
