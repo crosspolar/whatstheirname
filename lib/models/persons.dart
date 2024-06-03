@@ -23,11 +23,12 @@ class Person {
 }
 
 enum Gender {
-  male("Male"),
-  female("Female"),
-  genderNeutral("Gender-neutral");
+  male("male","Male"),
+  female("female","Female"),
+  genderNeutral("gender_neutral","Gender-neutral");
 
-  const Gender(this.label);
+  const Gender(this.key, this.label);
 
+  final String key;
   final String label;
 }
