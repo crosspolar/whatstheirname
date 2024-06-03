@@ -49,25 +49,20 @@ class Relationships extends ChangeNotifier {
 
 
 enum Relation {
-  uncle('Uncle', Colors.redAccent),
-  aunt('Aunt', Colors.redAccent),
-  sister('Sister', Colors.yellow),
-  brother('Brother', Colors.yellow),
-  neighbor('Neighbor', Colors.brown),
-  mother("Mother", Colors.indigo),
-  father("Father", Colors.indigo),
-  parent("Parent", Colors.indigo),
-  cousin("Cousin", Colors.cyanAccent),
-  nephew("Nephew", Colors.greenAccent),
-  niece("Niece", Colors.greenAccent),
-  daughter("Daughter", Colors.deepPurpleAccent),
-  son("Son", Colors.deepPurpleAccent),
-  child("Child", Colors.deepPurpleAccent),
-  stepfather("Stepfather", Colors.black26),
-  stepmother("Stepmother", Colors.black26);
+  parentssibling("Parent's sibling", Colors.redAccent, "Aunt", "Uncle"),
+  sibling("Sibling", Colors.yellow, "Sister", "Brother"),
+  neighbor('Neighbor', Colors.brown, "Neighbor", "Neighbor"),
+  parent("Parent", Colors.indigo, "Mother", "Father"),
+  cousin("Cousin", Colors.cyanAccent, "Cousin", "Cousin"),
+  childofsibling("Child of sibling", Colors.greenAccent, "Niece", "Nephew"),
+  child("Child", Colors.deepPurpleAccent, "Daughter", "Son"),
+  stepparent("Stepparent", Colors.black26, "Stepmother", "Stepfather");
 
-  const Relation(this.label, this.color);
+
+  const Relation(this.label, this.color, this.female, this.male);
 
   final String label;
   final Color color;
+  final String female;
+  final String male;
 }

@@ -299,7 +299,6 @@ class _AddRelationshipState extends State<AddRelationship> {
                     width: 20,
                   ),
                   DropdownMenu<Relation>(
-                    initialSelection: Relation.uncle,
                     controller: relationshipController,
                     // requestFocusOnTap is enabled/disabled by platforms when it is null.
                     // On mobile platforms, this is false by default. Setting this to true will
