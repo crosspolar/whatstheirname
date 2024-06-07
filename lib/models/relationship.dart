@@ -73,12 +73,12 @@ class Relationships extends ChangeNotifier {
 }
 
 enum Relation {
-  parentssibling("Parent's sibling", Colors.redAccent, "Aunt", "Uncle"),
+  parentsSibling("Parent's sibling", Colors.redAccent, "Aunt", "Uncle"),
   sibling("Sibling", Colors.yellow, "Sister", "Brother"),
   neighbor('Neighbor', Colors.brown, "Neighbor", "Neighbor"),
   parent("Parent", Colors.indigo, "Mother", "Father"),
   cousin("Cousin", Colors.cyanAccent, "Cousin", "Cousin"),
-  childofsibling("Child of sibling", Colors.greenAccent, "Niece", "Nephew"),
+  childOfSibling("Child of sibling", Colors.greenAccent, "Niece", "Nephew"),
   child("Child", Colors.deepPurpleAccent, "Daughter", "Son"),
   stepparent("Stepparent", Colors.black26, "Stepmother", "Stepfather");
 
