@@ -3,21 +3,6 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:whatshisname/models/persons.dart';
 
-String commentMark(int mark) {
-  String msg;
-  switch (mark) {
-    case 0: // Enter this block if mark == 0
-      msg = "mark is 0";
-    case 1:
-    case 2:
-    case 3: // Enter this block if mark == 1 or mark == 2 or mark == 3
-      msg = "mark is either 1, 2 or 3";
-    // etc.
-    default:
-      msg = "mark is not 0, 1, 2 or 3";
-  }
-  return msg;
-}
 
 class Relationship {
   final Person personA;
@@ -30,7 +15,7 @@ class Relationship {
   @override
   String toString() {
     String df;
-    switch (personB.gender) {
+    switch (personA.gender) {
       case Gender.genderNeutral:
         df = relation.label;
       case Gender.male:
