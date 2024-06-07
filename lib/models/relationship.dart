@@ -37,7 +37,7 @@ class Relationships extends ChangeNotifier {
   List<Relationship> relationsOf(Person person) {
     List<Relationship> l = [];
     for (final i in _relationships) {
-      if (i.personA.id == person.id) {
+      if (i.personA.uuid == person.uuid) {
         l.add(i);
       }
     }

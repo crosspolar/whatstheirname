@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import 'models/persons.dart';
 import 'models/relationship.dart';
@@ -19,6 +20,7 @@ void main() {
             5,
                 (i) =>
                 Person(
+                  uuid: i.toString(),
                   firstName: 'Person $i',
                   description: 'A description of Person $i',
                 ),
@@ -180,6 +182,8 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
 
+  String uuid = const Uuid().v4(); //
+
   bool isUpdate = false;
   Gender? selectedGender;
 
@@ -187,11 +191,12 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
   void initState() {
     super.initState();
 
-    isUpdate = widget.person.id != null;
+    isUpdate = widget.person.uuid != null;
     firstNameController.text = widget.person.firstName;
     lastNameController.text = widget.person.lastName;
     selectedGender = widget.person.gender;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +241,7 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                       // Validate returns true if the form is valid, or false otherwise.
                       if (_formKey.currentState!.validate()) {
                         final p = Person(
-                            id: widget.person.id,
+                            uuid: isUpdate ? widget.person.uuid : uuid,
                             gender: selectedGender!,
                             firstName: firstNameController.text,
                             lastName: lastNameController.text);

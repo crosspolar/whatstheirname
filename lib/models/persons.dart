@@ -1,12 +1,12 @@
 class Person {
-  final int? id;
+  final String? uuid;
   final String firstName;
   final String lastName;
   final String description;
   final Gender gender;
 
   const Person(
-      {this.id,
+      {this.uuid,
       this.firstName = '',
       this.lastName = '',
       this.description = '',
