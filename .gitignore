@@ -41,3 +41,28 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+**/.idea
+**/*.iml
+
+lcov.info
+
+.packages
+*/**/pubspec.lock
+
+
+benchmark_results.json
+
+flutter_export_environment.sh
+# Local Netlify folder
+.netlify
+
+docs/**/*.g.dart
+
+*/build/
+drift/extension/devtools/build
+**/pubspec_overrides.yaml
+**.history/
+
+# FVM Version Cache
+.fvm/
