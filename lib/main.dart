@@ -16,23 +16,22 @@ void main() {
         ),
         title: 'Passing Data',
         home: const PersonOverview(
-          // persons: List.generate(
-          //   5,
-          //       (i) =>
-          //       Person(
-          //         uuid: i.toString(),
-          //         firstName: 'Person $i',
-          //         description: 'A description of Person $i',
-          //       ),
-          // ),
-        ),
+            // persons: List.generate(
+            //   5,
+            //       (i) =>
+            //       Person(
+            //         uuid: i.toString(),
+            //         firstName: 'Person $i',
+            //         description: 'A description of Person $i',
+            //       ),
+            // ),
+            ),
       ),
     ),
   );
 }
 
 class PersonOverview extends StatefulWidget {
-
   const PersonOverview({super.key});
 
   @override
@@ -40,7 +39,6 @@ class PersonOverview extends StatefulWidget {
 }
 
 class PersonOverviewState extends State<PersonOverview> {
-
   @override
   void initState() {
     super.initState();
@@ -72,10 +70,9 @@ class PersonOverviewState extends State<PersonOverview> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            DetailScreen(
-                              person: snapshot.data![index],
-                            ),
+                        builder: (context) => DetailScreen(
+                          person: snapshot.data![index],
+                        ),
                       ),
                     );
                   },
@@ -85,8 +82,7 @@ class PersonOverviewState extends State<PersonOverview> {
           } else {
             return const Center(child: CircularProgressIndicator());
           }
-        }
-    );
+        });
   }
 
   @override
@@ -117,16 +113,15 @@ class PersonOverviewState extends State<PersonOverview> {
 
 class DetailScreen extends StatelessWidget {
   // In the constructor, require a Person.
-  const DetailScreen(
-      {super.key, required this.person});
+  const DetailScreen({super.key, required this.person});
 
   // Declare a field that holds the Person.
   final Person person;
 
   @override
   Widget build(BuildContext context) {
-    var allRelations = Provider.of<AppDatabase>(context).relationsOf(person.uuid);
-
+    var allRelations =
+        Provider.of<AppDatabase>(context).relationsOf(person.uuid);
 
     // Use the Person to create the UI.
     return Scaffold(
@@ -139,25 +134,22 @@ class DetailScreen extends StatelessWidget {
           children: <Widget>[
             Text(person.toString()),
             Text(person.gender.toString()),
-            Expanded(
-              child: buildListView(allRelations)
-            ),
+            Expanded(child: buildListView(allRelations)),
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   child: const Icon(Icons.add),
-      //   onPressed: () async {
-      //     final result = await Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) =>
-      //             AddRelationship(currentPerson: person, persons: otherPersons),
-      //       ),
-      //     );
-      //     // allRelations.add(result); TODO
-      //   },
-      // ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddRelationship(currentPerson: person),
+            ),
+          );
+          // allRelations.add(result); TODO
+        },
+      ),
     );
   }
 
@@ -167,32 +159,27 @@ class DetailScreen extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
-              itemCount: relationships.length,
-              itemBuilder: (context, index) =>
-                  ListTile(
-                    leading: const Icon(Icons.supervisor_account),
-                    title: Text(relationships[index].toString()),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () {
-                        relationships.remove(relationships[index]);
-                      },
-                    ),
-                  ),
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) => ListTile(
+                leading: const Icon(Icons.supervisor_account),
+                title: Text(snapshot.data![index].toString()),
+                trailing: IconButton(
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () {
+                    snapshot.data!.remove(snapshot.data![index]);
+                  },
+                ),
+              ),
             );
           } else {
             return const Center(child: CircularProgressIndicator());
           }
-
-
-    }
-    );
+        });
   }
 }
 
 class AddUpdatePersonPage extends StatefulWidget {
   final Person? person;
-
 
   const AddUpdatePersonPage({super.key, this.person});
 
@@ -204,7 +191,6 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
   final _formKey = GlobalKey<FormState>();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
-
 
   bool isUpdate = false;
   Gender? selectedGender;
@@ -219,10 +205,9 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
     // selectedGender = widget.person?.gender ?? Gender(; // TODO
   }
 
-
   @override
   Widget build(BuildContext context) {
-    var db = Provider.of<AppDatabase>(context);
+    final db = Provider.of<AppDatabase>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.person.toString()),
@@ -247,17 +232,16 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                     controller: lastNameController,
                   ),
                   DropdownButton<Gender>(
-                      value: selectedGender,
-                      onChanged: (Gender? gender) {
-                        setState(() {
-                          selectedGender = gender;
-                        });
-                      },
-                      items: Gender.values.map((Gender gender) {
-                        return DropdownMenuItem<Gender>(
-                            value: gender,
-                            child: Text(gender.label));
-                      }).toList(),
+                    value: selectedGender,
+                    onChanged: (Gender? gender) {
+                      setState(() {
+                        selectedGender = gender;
+                      });
+                    },
+                    items: Gender.values.map((Gender gender) {
+                      return DropdownMenuItem<Gender>(
+                          value: gender, child: Text(gender.label));
+                    }).toList(),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -265,25 +249,23 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                       if (_formKey.currentState!.validate()) {
                         if (isUpdate) {
                           final p = Person(
-                            uuid:  widget.person!.uuid,
+                            uuid: widget.person!.uuid,
                             gender: selectedGender ?? Gender.genderNeutral,
                             firstName: firstNameController.text,
                             lastName: lastNameController.text,
                           );
                           db.updatePerson(p);
                           Navigator.pop(context, p);
-                        }
-                        else {
+                        } else {
                           final p = PersonsCompanion(
-                            gender: drift.Value(selectedGender ?? Gender.genderNeutral),
+                            gender: drift.Value(
+                                selectedGender ?? Gender.genderNeutral),
                             firstName: drift.Value(firstNameController.text),
                             lastName: drift.Value(lastNameController.text),
                           );
                           db.addPerson(p);
                           Navigator.pop(context, p);
                         }
-
-
                       }
                     },
                     child: const Text('Submit'),
@@ -298,124 +280,164 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
   }
 }
 
-// class AddRelationship extends StatefulWidget {
-//   final Person currentPerson;
-//   final List<Person> persons;
-//
-//   const AddRelationship(
-//       {super.key, required this.currentPerson, required this.persons});
-//
-//   @override
-//   State<AddRelationship> createState() => _AddRelationshipState();
-// }
-//
-// class _AddRelationshipState extends State<AddRelationship> {
-//   final TextEditingController relationshipController = TextEditingController();
-//   final TextEditingController personController = TextEditingController();
-//   Relation? selectedRelation;
-//   Person? selectedPerson;
-//   List<Person> persons = [];
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//
-//     persons = widget.persons;
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Update for ${widget.currentPerson.toString()}"),
-//       ),
-//       body: SafeArea(
-//         child: Column(
-//           children: <Widget>[
-//             Padding(
-//               padding: const EdgeInsets.symmetric(vertical: 20),
-//               child: Row(
-//                 mainAxisAlignment: MainAxisAlignment.center,
-//                 children: <Widget>[
-//                   Text("${widget.currentPerson.firstName} is"),
-//                   const SizedBox(
-//                     width: 20,
-//                   ),
-//                   DropdownMenu<Relation>(
-//                     controller: relationshipController,
-//                     // requestFocusOnTap is enabled/disabled by platforms when it is null.
-//                     // On mobile platforms, this is false by default. Setting this to true will
-//                     // trigger focus request on the text field and virtual keyboard will appear
-//                     // afterward. On desktop platforms however, this defaults to true.
-//                     requestFocusOnTap: true,
-//                     label: const Text('Relation'),
-//                     onSelected: (Relation? relation) {
-//                       setState(() {
-//                         selectedRelation = relation;
-//                       });
-//                     },
-//                     dropdownMenuEntries: Relation.values
-//                         .map<DropdownMenuEntry<Relation>>((Relation relation) {
-//                       return DropdownMenuEntry<Relation>(
-//                         value: relation,
-//                         label: relation.label,
-//                         enabled: relation.label != 'Grey',
-//                         style: MenuItemButton.styleFrom(
-//                           foregroundColor: relation.color,
-//                         ),
-//                       );
-//                     }).toList(),
-//                   ),
-//                   const SizedBox(width: 20),
-//                   const Text(" of "),
-//                   const SizedBox(
-//                     width: 20,
-//                   ),
-//                   DropdownMenu<Person>(
-//                     controller: personController,
-//                     enableFilter: true,
-//                     requestFocusOnTap: true,
-//                     leadingIcon: const Icon(Icons.search),
-//                     label: const Text('Person'),
-//                     inputDecorationTheme: const InputDecorationTheme(
-//                       filled: true,
-//                       contentPadding: EdgeInsets.symmetric(vertical: 5.0),
-//                     ),
-//                     onSelected: (Person? person) {
-//                       setState(() {
-//                         selectedPerson = person;
-//                       });
-//                     },
-//                     dropdownMenuEntries: persons.map<DropdownMenuEntry<Person>>(
-//                           (Person icon) {
-//                         return DropdownMenuEntry<Person>(
-//                           value: icon,
-//                           label: icon.fullName(),
-//                         );
-//                       },
-//                     ).toList(),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             if (selectedRelation == null || selectedPerson == null)
-//               const Text('Please select a relation and a person.'),
-//             ElevatedButton(
-//               onPressed: (selectedRelation == null || selectedPerson == null)
-//                   ? null
-//                   : () {
-//                 // Validate returns true if the form is valid, or false otherwise.
-//                 final r = Relationship(
-//                     personA: widget.currentPerson,
-//                     personB: selectedPerson!,
-//                     relation: selectedRelation!);
-//                 Navigator.pop(context, r);
-//               },
-//               child: const Text('Submit'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+class AddRelationship extends StatefulWidget {
+  final Person currentPerson;
+
+  const AddRelationship({super.key, required this.currentPerson});
+
+  @override
+  State<AddRelationship> createState() => _AddRelationshipState();
+}
+
+class _AddRelationshipState extends State<AddRelationship> {
+  final TextEditingController relationshipController = TextEditingController();
+  final TextEditingController personController = TextEditingController();
+  Relation? selectedRelation;
+  Person? selectedPerson;
+  List<Person> persons = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final db = Provider.of<AppDatabase>(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Update for ${widget.currentPerson.toString()}"),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text("${widget.currentPerson.firstName} is"),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  FutureBuilder(
+                      future: db.allRelationTypes,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return DropdownMenu<Relation>(
+                            controller: relationshipController,
+                            // requestFocusOnTap is enabled/disabled by platforms when it is null.
+                            // On mobile platforms, this is false by default. Setting this to true will
+                            // trigger focus request on the text field and virtual keyboard will appear
+                            // afterward. On desktop platforms however, this defaults to true.
+                            requestFocusOnTap: true,
+                            label: const Text('Relation'),
+                            onSelected: (Relation? relation) {
+                              setState(() {
+                                selectedRelation = relation;
+                              });
+                            },
+                            dropdownMenuEntries: snapshot.data!
+                                .map<DropdownMenuEntry<Relation>>(
+                                    (Relation relation) {
+                              return DropdownMenuEntry<Relation>(
+                                value: relation,
+                                label: relation.toString(),
+                                enabled: relation.label != 'Grey',
+                                style: MenuItemButton.styleFrom(
+                                  foregroundColor: relation.color,
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        } else {
+                          return const Text("No Data here");
+                        }
+                      }),
+                  const SizedBox(width: 20),
+                  const Text(" of "),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  FutureBuilder(
+                    future: db.allPersons,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return DropdownMenu<Person>(
+                          controller: personController,
+                          enableFilter: true,
+                          requestFocusOnTap: true,
+                          leadingIcon: const Icon(Icons.search),
+                          label: const Text('Person'),
+                          inputDecorationTheme: const InputDecorationTheme(
+                            filled: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          onSelected: (Person? person) {
+                            setState(() {
+                              selectedPerson = person;
+                            });
+                          },
+                          dropdownMenuEntries:
+                              snapshot.data!.map<DropdownMenuEntry<Person>>(
+                            (Person icon) {
+                              return DropdownMenuEntry<Person>(
+                                value: icon,
+                                label: icon.toString(),
+                              );
+                            },
+                          ).toList(),
+                        );
+                      } else {
+                        return const Text("No Data here");
+                      }
+                    },
+                  ),
+                  // DropdownMenu<Person>(
+                  //   controller: personController,
+                  //   enableFilter: true,
+                  //   requestFocusOnTap: true,
+                  //   leadingIcon: const Icon(Icons.search),
+                  //   label: const Text('Person'),
+                  //   inputDecorationTheme: const InputDecorationTheme(
+                  //     filled: true,
+                  //     contentPadding: EdgeInsets.symmetric(vertical: 5.0),
+                  //   ),
+                  //   onSelected: (Person? person) {
+                  //     setState(() {
+                  //       selectedPerson = person;
+                  //     });
+                  //   },
+                  //   dropdownMenuEntries: persons.map<DropdownMenuEntry<Person>>(
+                  //     (Person icon) {
+                  //       return DropdownMenuEntry<Person>(
+                  //         value: icon,
+                  //         label: icon.toString(),
+                  //       );
+                  //     },
+                  //   ).toList(),
+                  // ),
+                ],
+              ),
+            ),
+            if (selectedRelation == null || selectedPerson == null)
+              const Text('Please select a relation and a person.'),
+            ElevatedButton(
+              onPressed: (selectedRelation == null || selectedPerson == null)
+                  ? null
+                  : () {
+                      // Validate returns true if the form is valid, or false otherwise.
+                      final r = Relationship(
+                          personA: widget.currentPerson.uuid,
+                          personB: selectedPerson!.uuid,
+                          relation: selectedRelation!.id);
+                      Navigator.pop(context, r);
+                    },
+              child: const Text('Submit'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

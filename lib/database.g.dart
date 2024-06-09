@@ -258,7 +258,7 @@ class PersonsCompanion extends UpdateCompanion<Person> {
 }
 
 class $RelationTableTable extends RelationTable
-    with TableInfo<$RelationTableTable, RelationTableData> {
+    with TableInfo<$RelationTableTable, Relation> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -309,7 +309,7 @@ class $RelationTableTable extends RelationTable
   String get actualTableName => $name;
   static const String $name = 'relation_table';
   @override
-  VerificationContext validateIntegrity(Insertable<RelationTableData> instance,
+  VerificationContext validateIntegrity(Insertable<Relation> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -334,9 +334,9 @@ class $RelationTableTable extends RelationTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  RelationTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Relation map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return RelationTableData(
+    return Relation(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       gender: $RelationTableTable.$convertergender.fromSql(attachedDatabase
@@ -362,14 +362,13 @@ class $RelationTableTable extends RelationTable
   static TypeConverter<Color, int> $convertercolor = const ColorConverter();
 }
 
-class RelationTableData extends DataClass
-    implements Insertable<RelationTableData> {
+class Relation extends DataClass implements Insertable<Relation> {
   final int id;
   final Gender gender;
   final String? label;
   final int? baseRelation;
   final Color color;
-  const RelationTableData(
+  const Relation(
       {required this.id,
       required this.gender,
       this.label,
@@ -409,10 +408,10 @@ class RelationTableData extends DataClass
     );
   }
 
-  factory RelationTableData.fromJson(Map<String, dynamic> json,
+  factory Relation.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return RelationTableData(
+    return Relation(
       id: serializer.fromJson<int>(json['id']),
       gender: $RelationTableTable.$convertergender
           .fromJson(serializer.fromJson<int>(json['gender'])),
@@ -434,13 +433,13 @@ class RelationTableData extends DataClass
     };
   }
 
-  RelationTableData copyWith(
+  Relation copyWith(
           {int? id,
           Gender? gender,
           Value<String?> label = const Value.absent(),
           Value<int?> baseRelation = const Value.absent(),
           Color? color}) =>
-      RelationTableData(
+      Relation(
         id: id ?? this.id,
         gender: gender ?? this.gender,
         label: label.present ? label.value : this.label,
@@ -450,7 +449,7 @@ class RelationTableData extends DataClass
       );
   @override
   String toString() {
-    return (StringBuffer('RelationTableData(')
+    return (StringBuffer('Relation(')
           ..write('id: $id, ')
           ..write('gender: $gender, ')
           ..write('label: $label, ')
@@ -465,7 +464,7 @@ class RelationTableData extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is RelationTableData &&
+      (other is Relation &&
           other.id == this.id &&
           other.gender == this.gender &&
           other.label == this.label &&
@@ -473,7 +472,7 @@ class RelationTableData extends DataClass
           other.color == this.color);
 }
 
-class RelationTableCompanion extends UpdateCompanion<RelationTableData> {
+class RelationTableCompanion extends UpdateCompanion<Relation> {
   final Value<int> id;
   final Value<Gender> gender;
   final Value<String?> label;
@@ -494,7 +493,7 @@ class RelationTableCompanion extends UpdateCompanion<RelationTableData> {
     required Color color,
   })  : gender = Value(gender),
         color = Value(color);
-  static Insertable<RelationTableData> custom({
+  static Insertable<Relation> custom({
     Expression<int>? id,
     Expression<int>? gender,
     Expression<String>? label,

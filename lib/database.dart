@@ -56,6 +56,7 @@ class RelationshipTable extends Table {
   IntColumn get relation => integer().references(RelationTable, #id)();
 }
 
+@DataClassName("Relation")
 class RelationTable extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get gender => intEnum<Gender>()();
@@ -75,6 +76,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Person>> get allPersons => select(persons).get();
 
+  Future<List<Relation>> get allRelationTypes => select(relationTable).get();
   Future<List<Relationship>> relationsOf(int personId) {
     return (select(relationshipTable)..where((t) => t.personA.equals(personId))).get();
   }
@@ -105,6 +107,10 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
+        onCreate: (m) async {
+          await m.createAll(); // create all tables
+          await into(relationTable).insert(const RelationTableCompanion(gender: Value(Gender.male),label:Value("Uncle"))); // insert on first run.
+        },
         beforeOpen: (details) async {
           // Make sure that foreign keys are enabled
           await customStatement('PRAGMA foreign_keys = ON');
