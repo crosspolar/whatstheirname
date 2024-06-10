@@ -62,7 +62,6 @@ class PersonOverviewState extends State<PersonOverview> {
                           builder: (context) =>
                               AddUpdatePersonPage(person: personToEdit)),
                     );
-                    // var result = await _navigateAndDisplaySelection(context, persons[index]);
                     if (result != null) snapshot.data![index] = result;
                     setState(() {});
                   },
@@ -80,7 +79,7 @@ class PersonOverviewState extends State<PersonOverview> {
               },
             );
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const Text("Enter first person");
           }
         });
   }
@@ -102,8 +101,6 @@ class PersonOverviewState extends State<PersonOverview> {
               builder: (context) => const AddUpdatePersonPage(),
             ),
           );
-          // var result = await _navigateAndDisplaySelection(context, persons[index]);
-          // if (result != null) persons.add(result); TODO
           setState(() {});
         },
       ),
@@ -122,7 +119,7 @@ class DetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var allRelations =
         Provider.of<AppDatabase>(context).relationsOf(person.uuid);
-
+    final db = Provider.of<AppDatabase>(context);
     // Use the Person to create the UI.
     return Scaffold(
       appBar: AppBar(
@@ -141,13 +138,16 @@ class DetailScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          final result = await Navigator.push(
+          final result = await Navigator.push<Relationship>(
             context,
             MaterialPageRoute(
               builder: (context) => AddRelationship(currentPerson: person),
             ),
           );
-          // allRelations.add(result); TODO
+          if (result != null) {
+            print(result);
+            db.addRelationship(result.toCompanion(true));
+          }
         },
       ),
     );
@@ -294,7 +294,8 @@ class _AddRelationshipState extends State<AddRelationship> {
   final TextEditingController personController = TextEditingController();
   Relation? selectedRelation;
   Person? selectedPerson;
-  List<Person> persons = [];
+  
+  
 
   @override
   void initState() {
@@ -306,7 +307,7 @@ class _AddRelationshipState extends State<AddRelationship> {
     final db = Provider.of<AppDatabase>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Update for ${widget.currentPerson.toString()}"),
+        title: Text("Relationship for ${widget.currentPerson.toString()}"),
       ),
       body: SafeArea(
         child: Column(
@@ -342,7 +343,7 @@ class _AddRelationshipState extends State<AddRelationship> {
                                     (Relation relation) {
                               return DropdownMenuEntry<Relation>(
                                 value: relation,
-                                label: relation.toString(),
+                                label: relation.label ?? "no label",
                                 enabled: relation.label != 'Grey',
                                 style: MenuItemButton.styleFrom(
                                   foregroundColor: relation.color,
@@ -393,30 +394,6 @@ class _AddRelationshipState extends State<AddRelationship> {
                       }
                     },
                   ),
-                  // DropdownMenu<Person>(
-                  //   controller: personController,
-                  //   enableFilter: true,
-                  //   requestFocusOnTap: true,
-                  //   leadingIcon: const Icon(Icons.search),
-                  //   label: const Text('Person'),
-                  //   inputDecorationTheme: const InputDecorationTheme(
-                  //     filled: true,
-                  //     contentPadding: EdgeInsets.symmetric(vertical: 5.0),
-                  //   ),
-                  //   onSelected: (Person? person) {
-                  //     setState(() {
-                  //       selectedPerson = person;
-                  //     });
-                  //   },
-                  //   dropdownMenuEntries: persons.map<DropdownMenuEntry<Person>>(
-                  //     (Person icon) {
-                  //       return DropdownMenuEntry<Person>(
-                  //         value: icon,
-                  //         label: icon.toString(),
-                  //       );
-                  //     },
-                  //   ).toList(),
-                  // ),
                 ],
               ),
             ),

@@ -296,10 +296,10 @@ class $RelationTableTable extends RelationTable
           GeneratedColumn.constraintIsAlways('REFERENCES relation_table (id)'));
   static const VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
-  late final GeneratedColumnWithTypeConverter<Color, int> color =
-      GeneratedColumn<int>('color', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<Color>($RelationTableTable.$convertercolor);
+  late final GeneratedColumnWithTypeConverter<Color?, int> color =
+      GeneratedColumn<int>('color', aliasedName, true,
+              type: DriftSqlType.int, requiredDuringInsert: false)
+          .withConverter<Color?>($RelationTableTable.$convertercolorn);
   @override
   List<GeneratedColumn> get $columns =>
       [id, gender, label, baseRelation, color];
@@ -346,9 +346,9 @@ class $RelationTableTable extends RelationTable
           .read(DriftSqlType.string, data['${effectivePrefix}label']),
       baseRelation: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}base_relation']),
-      color: $RelationTableTable.$convertercolor.fromSql(attachedDatabase
+      color: $RelationTableTable.$convertercolorn.fromSql(attachedDatabase
           .typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}color'])!),
+          .read(DriftSqlType.int, data['${effectivePrefix}color'])),
     );
   }
 
@@ -360,6 +360,8 @@ class $RelationTableTable extends RelationTable
   static JsonTypeConverter2<Gender, int, int> $convertergender =
       const EnumIndexConverter<Gender>(Gender.values);
   static TypeConverter<Color, int> $convertercolor = const ColorConverter();
+  static TypeConverter<Color?, int?> $convertercolorn =
+      NullAwareTypeConverter.wrap($convertercolor);
 }
 
 class Relation extends DataClass implements Insertable<Relation> {
@@ -367,13 +369,13 @@ class Relation extends DataClass implements Insertable<Relation> {
   final Gender gender;
   final String? label;
   final int? baseRelation;
-  final Color color;
+  final Color? color;
   const Relation(
       {required this.id,
       required this.gender,
       this.label,
       this.baseRelation,
-      required this.color});
+      this.color});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -388,9 +390,9 @@ class Relation extends DataClass implements Insertable<Relation> {
     if (!nullToAbsent || baseRelation != null) {
       map['base_relation'] = Variable<int>(baseRelation);
     }
-    {
+    if (!nullToAbsent || color != null) {
       map['color'] =
-          Variable<int>($RelationTableTable.$convertercolor.toSql(color));
+          Variable<int>($RelationTableTable.$convertercolorn.toSql(color));
     }
     return map;
   }
@@ -404,7 +406,8 @@ class Relation extends DataClass implements Insertable<Relation> {
       baseRelation: baseRelation == null && nullToAbsent
           ? const Value.absent()
           : Value(baseRelation),
-      color: Value(color),
+      color:
+          color == null && nullToAbsent ? const Value.absent() : Value(color),
     );
   }
 
@@ -417,7 +420,7 @@ class Relation extends DataClass implements Insertable<Relation> {
           .fromJson(serializer.fromJson<int>(json['gender'])),
       label: serializer.fromJson<String?>(json['label']),
       baseRelation: serializer.fromJson<int?>(json['baseRelation']),
-      color: serializer.fromJson<Color>(json['color']),
+      color: serializer.fromJson<Color?>(json['color']),
     );
   }
   @override
@@ -429,7 +432,7 @@ class Relation extends DataClass implements Insertable<Relation> {
           .toJson<int>($RelationTableTable.$convertergender.toJson(gender)),
       'label': serializer.toJson<String?>(label),
       'baseRelation': serializer.toJson<int?>(baseRelation),
-      'color': serializer.toJson<Color>(color),
+      'color': serializer.toJson<Color?>(color),
     };
   }
 
@@ -438,14 +441,14 @@ class Relation extends DataClass implements Insertable<Relation> {
           Gender? gender,
           Value<String?> label = const Value.absent(),
           Value<int?> baseRelation = const Value.absent(),
-          Color? color}) =>
+          Value<Color?> color = const Value.absent()}) =>
       Relation(
         id: id ?? this.id,
         gender: gender ?? this.gender,
         label: label.present ? label.value : this.label,
         baseRelation:
             baseRelation.present ? baseRelation.value : this.baseRelation,
-        color: color ?? this.color,
+        color: color.present ? color.value : this.color,
       );
   @override
   String toString() {
@@ -477,7 +480,7 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
   final Value<Gender> gender;
   final Value<String?> label;
   final Value<int?> baseRelation;
-  final Value<Color> color;
+  final Value<Color?> color;
   const RelationTableCompanion({
     this.id = const Value.absent(),
     this.gender = const Value.absent(),
@@ -490,9 +493,8 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
     required Gender gender,
     this.label = const Value.absent(),
     this.baseRelation = const Value.absent(),
-    required Color color,
-  })  : gender = Value(gender),
-        color = Value(color);
+    this.color = const Value.absent(),
+  }) : gender = Value(gender);
   static Insertable<Relation> custom({
     Expression<int>? id,
     Expression<int>? gender,
@@ -514,7 +516,7 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
       Value<Gender>? gender,
       Value<String?>? label,
       Value<int?>? baseRelation,
-      Value<Color>? color}) {
+      Value<Color?>? color}) {
     return RelationTableCompanion(
       id: id ?? this.id,
       gender: gender ?? this.gender,
@@ -541,8 +543,8 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
       map['base_relation'] = Variable<int>(baseRelation.value);
     }
     if (color.present) {
-      map['color'] =
-          Variable<int>($RelationTableTable.$convertercolor.toSql(color.value));
+      map['color'] = Variable<int>(
+          $RelationTableTable.$convertercolorn.toSql(color.value));
     }
     return map;
   }

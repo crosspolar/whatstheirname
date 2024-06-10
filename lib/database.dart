@@ -64,7 +64,7 @@ class RelationTable extends Table {
   IntColumn get baseRelation => integer().references(RelationTable, #id).nullable()();
   // We can use type converters to store custom classes in tables.
   // Here, we're storing colors as integers.
-  IntColumn get color => integer().map(const ColorConverter())();
+  IntColumn get color => integer().map(const ColorConverter()).nullable()();
 }
 
 @DriftDatabase(tables: [Persons, RelationshipTable, RelationTable])
@@ -86,9 +86,10 @@ class AppDatabase extends _$AppDatabase {
     return (select(persons)..where((tbl) => tbl.uuid.equals(personId))).getSingle();
   }
 
-  // Future<int> createOrUpdatePerson(Persons person) {
-  //   return into(persons).insertOnConflictUpdate(person);
-  // }
+  // returns the generated id
+  Future<int> addRelationship(RelationshipTableCompanion entry) {
+    return into(relationshipTable).insert(entry);
+  }
 
   // returns the generated id
   Future<int> addPerson(PersonsCompanion entry) {
