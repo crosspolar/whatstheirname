@@ -53,7 +53,8 @@ class PersonOverviewState extends State<PersonOverview> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(snapshot.data![index].toString()),
+                  leading: const Icon(Icons.person),
+                  title: Text(fullName(snapshot.data![index])),
                   onLongPress: () async {
                     var personToEdit = snapshot.data![index];
                     final result = await Navigator.push(
@@ -134,14 +135,14 @@ class DetailScreenState extends State<DetailScreen> {
     // Use the Person to create the UI.
     return Scaffold(
       appBar: AppBar(
-        title: Text(person.toString()),
+        title: Text(fullName(person)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: <Widget>[
-            Text(person.toString()),
-            Text(person.gender.toString()),
+            Text(fullName(person)),
+            Text(person.gender.label),
             Expanded(child: buildListView(allRelations)),
           ],
         ),
@@ -174,7 +175,7 @@ class DetailScreenState extends State<DetailScreen> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) => ListTile(
                 leading: const Icon(Icons.supervisor_account),
-                title: Text(snapshot.data![index].toString()),
+                title: Text(RelationshipName(snapshot.data![index])),
                 trailing: IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
                   onPressed: () {

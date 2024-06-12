@@ -49,6 +49,20 @@ enum Gender {
 //   TextColumn get description => text()();
 // }
 
+String fullName(Person person) {
+  final firstName = person.firstName;
+  final lastName = person.lastName;
+  return '$firstName $lastName';
+}
+
+String RelationshipName(Relationship d) {
+  final personA = d.personA.firstName;
+  final personB = d.personB;
+  final relation = d.relation;
+
+  return '$personA is $relation of $personB';
+}
+
 @DataClassName('Relationship')
 class RelationshipTable extends Table {
   IntColumn get personA => integer().references(Persons, #uuid)();
