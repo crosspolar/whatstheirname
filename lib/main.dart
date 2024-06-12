@@ -175,7 +175,7 @@ class DetailScreenState extends State<DetailScreen> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) => ListTile(
                 leading: const Icon(Icons.supervisor_account),
-                title: Text(RelationshipName(snapshot.data![index])),
+                title: Text(relationshipName(snapshot.data![index])),
                 trailing: IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
                   onPressed: () {

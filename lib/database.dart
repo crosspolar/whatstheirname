@@ -55,8 +55,8 @@ String fullName(Person person) {
   return '$firstName $lastName';
 }
 
-String RelationshipName(Relationship d) {
-  final personA = d.personA.firstName;
+String relationshipName(Relationship d) {
+  final personA = d.personA;
   final personB = d.personB;
   final relation = d.relation;
 
@@ -142,33 +142,21 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration {
     return MigrationStrategy(onCreate: (m) async {
       await m.createAll(); // create all tables
-      await into(relationTable).insert(const RelationTableCompanion(
-          gender: Value(Gender.male),
-          label: Value("Uncle"))); // insert on first run.
+      await batch((batch) {
+        batch.insertAll(relationTable, [
+          RelationTableCompanion.insert(id:const Value(1), gender: Gender.genderNeutral, label: const Value("Parent's sibling")),
+          RelationTableCompanion.insert(gender: Gender.male, label:const Value("Uncle"), baseRelation: const Value(1)),
+          RelationTableCompanion.insert(gender: Gender.female, label: const Value("Aunt"), baseRelation: const Value(1)),
+          RelationTableCompanion.insert(id: const Value(4), gender: Gender.genderNeutral, label: const Value("Sibling",)),
+          RelationTableCompanion.insert(gender: Gender.male, label: const Value("Brother"), baseRelation: const Value(4)),
+          RelationTableCompanion.insert(gender: Gender.female, label: const Value("Sister"), baseRelation: const Value(4)),
+        ]);
+      });
     }, beforeOpen: (details) async {
       // Make sure that foreign keys are enabled
       await customStatement('PRAGMA foreign_keys = ON');
 
-      // TODO default werte erstellen
-      // if (details.wasCreated) {
-      //   // Create a bunch of default values so the app doesn't look too empty
-      //   // on the first start.
-      //   await batch((b) {
-      //     b.insert(
-      //       categories,
-      //       CategoriesCompanion.insert(name: 'Important', color: Colors.red),
-      //     );
-      //
-      //     b.insertAll(todoEntries, [
-      //       TodoEntriesCompanion.insert(description: 'Check out drift'),
-      //       TodoEntriesCompanion.insert(
-      //           description: 'Fix session invalidation bug',
-      //           category: const Value(1)),
-      //       TodoEntriesCompanion.insert(
-      //           description: 'Add favorite movies to home page'),
-      //     ]);
-      //   });
-      // }
+
     });
   }
 }
