@@ -108,12 +108,23 @@ class PersonOverviewState extends State<PersonOverview> {
   }
 }
 
-class DetailScreen extends StatelessWidget {
-  // In the constructor, require a Person.
+class DetailScreen extends StatefulWidget {
+  final Person person;
   const DetailScreen({super.key, required this.person});
 
+  @override
+  DetailScreenState createState() => DetailScreenState();
+}
+
+class DetailScreenState extends State<DetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    person = widget.person;
+  }
+
   // Declare a field that holds the Person.
-  final Person person;
+  late Person person;
 
   @override
   Widget build(BuildContext context) {
@@ -145,15 +156,16 @@ class DetailScreen extends StatelessWidget {
             ),
           );
           if (result != null) {
-            print(result);
             db.addRelationship(result.toCompanion(true));
           }
+          setState(() {});
         },
       ),
     );
   }
 
   Widget buildListView(relationships) {
+    final db = Provider.of<AppDatabase>(context);
     return FutureBuilder<List<Relationship>>(
         future: relationships,
         builder: (context, snapshot) {
@@ -166,7 +178,9 @@ class DetailScreen extends StatelessWidget {
                 trailing: IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
                   onPressed: () {
-                    snapshot.data!.remove(snapshot.data![index]);
+                    // snapshot.data!.remove(snapshot.data![index]);
+                    db.deleteRelationship(snapshot.data![index]);
+                    setState(() {});
                   },
                 ),
               ),
