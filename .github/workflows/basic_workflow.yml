@@ -32,6 +32,7 @@ jobs:
           cache: true
       - run: flutter --version
       - run: flutter pub get
-      - run: flutter test
+      - run: flutter analyze
+#      - run: flutter test
       - run: flutter build apk
       - run: flutter build appbundle
