@@ -55,11 +55,7 @@ String fullName(Person person) {
   return '$firstName $lastName';
 }
 
-String relationshipName(Relationship d) {
-  final personA = d.personA;
-  final personB = d.personB;
-  final relation = d.relation;
-
+String relationshipName(String personA, String personB, String relation) {
   return '$personA is $relation of $personB';
 }
 
@@ -110,7 +106,12 @@ class AppDatabase extends _$AppDatabase {
         .getSingle();
   }
 
-  // returns the generated id
+  Future<Relation> relationByID(int relationID) {
+    return (select(relationTable)..where((tbl) => tbl.id.equals(relationID)))
+        .getSingle();
+  }
+
+    // returns the generated id
   Future<int> addRelationship(RelationshipTableCompanion entry) {
     return into(relationshipTable).insert(entry);
   }
@@ -140,7 +141,8 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration {
-    return MigrationStrategy(onCreate: (m) async {
+    return MigrationStrategy(
+        onCreate: (m) async {
       await m.createAll(); // create all tables
       await batch((batch) {
         batch.insertAll(relationTable, [

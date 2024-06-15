@@ -111,6 +111,7 @@ class PersonOverviewState extends State<PersonOverview> {
 
 class DetailScreen extends StatefulWidget {
   final Person person;
+
   const DetailScreen({super.key, required this.person});
 
   @override
@@ -175,7 +176,15 @@ class DetailScreenState extends State<DetailScreen> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) => ListTile(
                 leading: const Icon(Icons.supervisor_account),
-                title: Text(relationshipName(snapshot.data![index])),
+                title: FutureBuilder<String>(
+                    future: relationNameBuild(snapshot.data![index]),
+                    builder: (context2, snapshot2) {
+                      if (snapshot2.hasData) {
+                        return Text(snapshot2.data!);
+                      } else {
+                        return const Text("");
+                      }
+                    }),
                 trailing: IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
                   onPressed: () {
@@ -190,6 +199,16 @@ class DetailScreenState extends State<DetailScreen> {
             return const Center(child: CircularProgressIndicator());
           }
         });
+  }
+
+  Future<String> relationNameBuild(Relationship r) async {
+    final db = Provider.of<AppDatabase>(context);
+    final Person personA = await db.personByID(r.personA);
+    final Person personB = await db.personByID(r.personB);
+
+    final Relation relation = await db.relationByID(r.relation);
+    return relationshipName(fullName(personA), fullName(personB),
+        relation.label ?? "no relation name");
   }
 }
 
@@ -309,8 +328,6 @@ class _AddRelationshipState extends State<AddRelationship> {
   final TextEditingController personController = TextEditingController();
   Relation? selectedRelation;
   Person? selectedPerson;
-  
-  
 
   @override
   void initState() {
