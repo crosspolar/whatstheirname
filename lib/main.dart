@@ -127,12 +127,14 @@ class DetailScreenState extends State<DetailScreen> {
 
   // Declare a field that holds the Person.
   late Person person;
+  List<Relationship> allRelations = [];
 
   @override
   Widget build(BuildContext context) {
-    var allRelations =
-        Provider.of<AppDatabase>(context).relationsOf(person.uuid);
     final db = Provider.of<AppDatabase>(context);
+    db.relationsOf(person.uuid).then((value) => setState(() {
+          allRelations = value;
+        }));
     // Use the Person to create the UI.
     return Scaffold(
       appBar: AppBar(
@@ -168,37 +170,29 @@ class DetailScreenState extends State<DetailScreen> {
 
   Widget buildListView(relationships) {
     final db = Provider.of<AppDatabase>(context);
-    return FutureBuilder<List<Relationship>>(
-        future: relationships,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) => ListTile(
-                leading: const Icon(Icons.supervisor_account),
-                title: FutureBuilder<String>(
-                    future: relationNameBuild(snapshot.data![index]),
-                    builder: (context2, snapshot2) {
-                      if (snapshot2.hasData) {
-                        return Text(snapshot2.data!);
-                      } else {
-                        return const Text("");
-                      }
-                    }),
-                trailing: IconButton(
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed: () {
-                    // snapshot.data!.remove(snapshot.data![index]);
-                    db.deleteRelationship(snapshot.data![index]);
-                    setState(() {});
-                  },
-                ),
-              ),
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        });
+    return ListView.builder(
+      itemCount: relationships.length,
+      itemBuilder: (context, index) => ListTile(
+        leading: const Icon(Icons.supervisor_account),
+        title: FutureBuilder<String>(
+            future: relationNameBuild(relationships[index]),
+            builder: (context2, snapshot2) {
+              if (snapshot2.hasData) {
+                return Text(snapshot2.data!);
+              } else {
+                return const Text("");
+              }
+            }),
+        trailing: IconButton(
+          icon: const Icon(Icons.remove_circle_outline),
+          onPressed: () {
+            // snapshot.data!.remove(snapshot.data![index]);
+            db.deleteRelationship(relationships[index]);
+            setState(() {});
+          },
+        ),
+      ),
+    );
   }
 
   Future<String> relationNameBuild(Relationship r) async {
