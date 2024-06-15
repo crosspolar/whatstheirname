@@ -96,7 +96,7 @@ class PersonOverviewState extends State<PersonOverview> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          final result = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const AddUpdatePersonPage(),
