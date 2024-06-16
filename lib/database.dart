@@ -21,6 +21,8 @@ class Persons extends Table {
   TextColumn get lastName => text()();
 
   IntColumn get gender => intEnum<Gender>()(); // TODO with default
+
+  TextColumn get description => text().nullable()();
 }
 
 class ColorConverter extends TypeConverter<Color, int> {
@@ -110,24 +112,26 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<Relationship>> relationsOf(int personId) {
-    return (select(relationshipTable)..where((t) => t.personA.equals(personId)))
+    return (select(relationshipTable)
+      ..where((t) => t.personA.equals(personId)))
         .get();
   }
 
   Future<Person> personByID(int personId) {
     // TODO Check that really only one person exists
-    return (select(persons)..where((tbl) => tbl.uuid.equals(personId)))
+    return (select(persons)
+      ..where((tbl) => tbl.uuid.equals(personId)))
         .getSingle();
   }
 
-  Future<RelationTypeWithGender> relationByGroupIDAndGender(
-      int relationID, Gender gender) {
+  Future<RelationTypeWithGender> relationByGroupIDAndGender(int relationID,
+      Gender gender) {
     final query = (select(relationTypes).join([
       innerJoin(relationTypeWithGenders,
           relationTypeWithGenders.groupID.equalsExp(relationTypes.groupID))
     ])
       ..where(relationTypeWithGenders.groupID.equals(relationID) &
-          relationTypeWithGenders.gender.equals(gender.index)));
+      relationTypeWithGenders.gender.equals(gender.index)));
     return query
         .map((row) => row.readTable(relationTypeWithGenders))
         .getSingle();
@@ -140,10 +144,10 @@ class AppDatabase extends _$AppDatabase {
 
   Future deleteRelationship(Relationship relationshipToDelete) {
     return (delete(relationshipTable)
-          ..where((t) =>
-              t.personA.equals(relationshipToDelete.personA) &
-              t.personB.equals(relationshipToDelete.personB) &
-              t.relation.equals(relationshipToDelete.relation)))
+      ..where((t) =>
+      t.personA.equals(relationshipToDelete.personA) &
+      t.personB.equals(relationshipToDelete.personB) &
+      t.relation.equals(relationshipToDelete.relation)))
         .go();
   }
 
@@ -168,21 +172,21 @@ class AppDatabase extends _$AppDatabase {
       await batch((batch) {
         batch.insertAll(relationTypes, [
           RelationTypesCompanion.insert(
-              // gender: Gender.genderNeutral,
               groupLabel: const Value("Parent's sibling"),
               groupID: const Value(1)),
           RelationTypesCompanion.insert(
-              // gender: Gender.genderNeutral,
               groupLabel: const Value("Sibling"),
               groupID: const Value(2)),
           RelationTypesCompanion.insert(
-              // gender: Gender.genderNeutral,
               groupLabel: const Value("Child"),
               groupID: const Value(3)),
           RelationTypesCompanion.insert(
-              // gender: Gender.genderNeutral,
               groupLabel: const Value("Parent"),
               groupID: const Value(4)),
+          // RelationTypesCompanion.insert(
+          //     groupLabel: const("marriage partner"),
+          //     groupID: const Value(5)
+          // )
         ]);
         batch.insertAll(relationTypeWithGenders, [
           RelationTypeWithGendersCompanion.insert(

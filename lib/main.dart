@@ -140,6 +140,7 @@ class DetailScreenState extends State<DetailScreen> {
           children: <Widget>[
             Text(fullName(person)),
             Text(person.gender.label),
+            Text(person.description ?? ""),
             Expanded(child: buildListView(allRelations)),
           ],
         ),
@@ -213,6 +214,7 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
   final _formKey = GlobalKey<FormState>();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
+  final descriptionController = TextEditingController();
 
   bool isUpdate = false;
   Gender? selectedGender;
@@ -224,7 +226,8 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
     isUpdate = widget.person?.uuid != null;
     firstNameController.text = widget.person?.firstName ?? "";
     lastNameController.text = widget.person?.lastName ?? "";
-    // selectedGender = widget.person?.gender ?? Gender(; // TODO
+    descriptionController.text = widget.person!.description ?? "";
+    selectedGender = widget.person?.gender ?? Gender.genderNeutral;
   }
 
   @override
@@ -265,6 +268,10 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                           value: gender, child: Text(gender.label));
                     }).toList(),
                   ),
+                  TextFormField(
+                    decoration: const InputDecoration(hintText: "Description"),
+                    controller: descriptionController,
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // Validate returns true if the form is valid, or false otherwise.
@@ -275,6 +282,7 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                             gender: selectedGender ?? Gender.genderNeutral,
                             firstName: firstNameController.text,
                             lastName: lastNameController.text,
+                            description: descriptionController.text,
                           );
                           db.updatePerson(p);
                           Navigator.pop(context, p);

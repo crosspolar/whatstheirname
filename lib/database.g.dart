@@ -35,8 +35,15 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
       GeneratedColumn<int>('gender', aliasedName, false,
               type: DriftSqlType.int, requiredDuringInsert: true)
           .withConverter<Gender>($PersonsTable.$convertergender);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
   @override
-  List<GeneratedColumn> get $columns => [uuid, firstName, lastName, gender];
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [uuid, firstName, lastName, gender, description];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -64,6 +71,12 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
       context.missing(_lastNameMeta);
     }
     context.handle(_genderMeta, const VerificationResult.success());
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
     return context;
   }
 
@@ -82,6 +95,8 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
       gender: $PersonsTable.$convertergender.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}gender'])!),
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
     );
   }
 
@@ -99,11 +114,13 @@ class Person extends DataClass implements Insertable<Person> {
   final String firstName;
   final String lastName;
   final Gender gender;
+  final String? description;
   const Person(
       {required this.uuid,
       required this.firstName,
       required this.lastName,
-      required this.gender});
+      required this.gender,
+      this.description});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -114,6 +131,9 @@ class Person extends DataClass implements Insertable<Person> {
       map['gender'] =
           Variable<int>($PersonsTable.$convertergender.toSql(gender));
     }
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
     return map;
   }
 
@@ -123,6 +143,9 @@ class Person extends DataClass implements Insertable<Person> {
       firstName: Value(firstName),
       lastName: Value(lastName),
       gender: Value(gender),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
     );
   }
 
@@ -135,6 +158,7 @@ class Person extends DataClass implements Insertable<Person> {
       lastName: serializer.fromJson<String>(json['lastName']),
       gender: $PersonsTable.$convertergender
           .fromJson(serializer.fromJson<int>(json['gender'])),
+      description: serializer.fromJson<String?>(json['description']),
     );
   }
   @override
@@ -146,16 +170,22 @@ class Person extends DataClass implements Insertable<Person> {
       'lastName': serializer.toJson<String>(lastName),
       'gender':
           serializer.toJson<int>($PersonsTable.$convertergender.toJson(gender)),
+      'description': serializer.toJson<String?>(description),
     };
   }
 
   Person copyWith(
-          {int? uuid, String? firstName, String? lastName, Gender? gender}) =>
+          {int? uuid,
+          String? firstName,
+          String? lastName,
+          Gender? gender,
+          Value<String?> description = const Value.absent()}) =>
       Person(
         uuid: uuid ?? this.uuid,
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,
         gender: gender ?? this.gender,
+        description: description.present ? description.value : this.description,
       );
   @override
   String toString() {
@@ -163,13 +193,15 @@ class Person extends DataClass implements Insertable<Person> {
           ..write('uuid: $uuid, ')
           ..write('firstName: $firstName, ')
           ..write('lastName: $lastName, ')
-          ..write('gender: $gender')
+          ..write('gender: $gender, ')
+          ..write('description: $description')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, firstName, lastName, gender);
+  int get hashCode =>
+      Object.hash(uuid, firstName, lastName, gender, description);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -177,7 +209,8 @@ class Person extends DataClass implements Insertable<Person> {
           other.uuid == this.uuid &&
           other.firstName == this.firstName &&
           other.lastName == this.lastName &&
-          other.gender == this.gender);
+          other.gender == this.gender &&
+          other.description == this.description);
 }
 
 class PersonsCompanion extends UpdateCompanion<Person> {
@@ -185,17 +218,20 @@ class PersonsCompanion extends UpdateCompanion<Person> {
   final Value<String> firstName;
   final Value<String> lastName;
   final Value<Gender> gender;
+  final Value<String?> description;
   const PersonsCompanion({
     this.uuid = const Value.absent(),
     this.firstName = const Value.absent(),
     this.lastName = const Value.absent(),
     this.gender = const Value.absent(),
+    this.description = const Value.absent(),
   });
   PersonsCompanion.insert({
     this.uuid = const Value.absent(),
     required String firstName,
     required String lastName,
     required Gender gender,
+    this.description = const Value.absent(),
   })  : firstName = Value(firstName),
         lastName = Value(lastName),
         gender = Value(gender);
@@ -204,12 +240,14 @@ class PersonsCompanion extends UpdateCompanion<Person> {
     Expression<String>? firstName,
     Expression<String>? lastName,
     Expression<int>? gender,
+    Expression<String>? description,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
       if (firstName != null) 'first_name': firstName,
       if (lastName != null) 'last_name': lastName,
       if (gender != null) 'gender': gender,
+      if (description != null) 'description': description,
     });
   }
 
@@ -217,12 +255,14 @@ class PersonsCompanion extends UpdateCompanion<Person> {
       {Value<int>? uuid,
       Value<String>? firstName,
       Value<String>? lastName,
-      Value<Gender>? gender}) {
+      Value<Gender>? gender,
+      Value<String?>? description}) {
     return PersonsCompanion(
       uuid: uuid ?? this.uuid,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       gender: gender ?? this.gender,
+      description: description ?? this.description,
     );
   }
 
@@ -242,6 +282,9 @@ class PersonsCompanion extends UpdateCompanion<Person> {
       map['gender'] =
           Variable<int>($PersonsTable.$convertergender.toSql(gender.value));
     }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
     return map;
   }
 
@@ -251,7 +294,8 @@ class PersonsCompanion extends UpdateCompanion<Person> {
           ..write('uuid: $uuid, ')
           ..write('firstName: $firstName, ')
           ..write('lastName: $lastName, ')
-          ..write('gender: $gender')
+          ..write('gender: $gender, ')
+          ..write('description: $description')
           ..write(')'))
         .toString();
   }
