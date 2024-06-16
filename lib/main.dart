@@ -226,7 +226,7 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
     isUpdate = widget.person?.uuid != null;
     firstNameController.text = widget.person?.firstName ?? "";
     lastNameController.text = widget.person?.lastName ?? "";
-    descriptionController.text = widget.person!.description ?? "";
+    descriptionController.text = widget.person?.description ?? "";
     selectedGender = widget.person?.gender ?? Gender.genderNeutral;
   }
 
