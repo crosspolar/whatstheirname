@@ -28,10 +28,6 @@ class PersonOverview extends StatefulWidget {
   PersonOverviewState createState() => PersonOverviewState();
 }
 
-String relationshipName(String personA, String personB, String relation) {
-  return '$personA is $relation of $personB';
-}
-
 class PersonOverviewState extends State<PersonOverview> {
   @override
   void initState() {
@@ -195,9 +191,11 @@ class DetailScreenState extends State<DetailScreen> {
     final Person personA = await db.personByID(r.personA);
     final Person personB = await db.personByID(r.personB);
 
-    final RelationTypeWithGender relation = await db.relationByGroupIDAndGender(r.relation, personA.gender);
-    return relationshipName(fullName(personA), fullName(personB),
-        relation.label ?? "no relation name");
+    final RelationTypeWithGender relation =
+        await db.relationByGroupIDAndGender(r.relation, personA.gender);
+    final String relationLabel = relation.label ?? "not associated";
+    final String relationshipStatusLabel = r.relationshipStatus?.label ?? "";
+    return '${personA.firstName} is $relationshipStatusLabel $relationLabel of ${fullName(personB)}';
   }
 }
 
@@ -324,6 +322,7 @@ class _AddRelationshipState extends State<AddRelationship> {
   final TextEditingController personController = TextEditingController();
   RelationTypeWithGender? selectedRelation;
   Person? selectedPerson;
+  RelationshipStatus? selectedRelationshipStatus;
 
   @override
   void initState() {
@@ -350,7 +349,8 @@ class _AddRelationshipState extends State<AddRelationship> {
                     width: 20,
                   ),
                   FutureBuilder(
-                      future: db.allRelationTypesForGender(widget.currentPerson.gender),
+                      future: db.allRelationTypesForGender(
+                          widget.currentPerson.gender),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return DropdownMenu<RelationTypeWithGender>(
@@ -426,6 +426,20 @@ class _AddRelationshipState extends State<AddRelationship> {
                 ],
               ),
             ),
+            DropdownButton<RelationshipStatus>(
+              value: selectedRelationshipStatus,
+              onChanged: (RelationshipStatus? relationshipStatus) {
+                setState(() {
+                  selectedRelationshipStatus = relationshipStatus;
+                });
+              },
+              items: RelationshipStatus.values
+                  .map((RelationshipStatus relationshipStatus) {
+                return DropdownMenuItem<RelationshipStatus>(
+                    value: relationshipStatus,
+                    child: Text(relationshipStatus.label));
+              }).toList(),
+            ),
             if (selectedRelation == null || selectedPerson == null)
               const Text('Please select a relation and a person.'),
             ElevatedButton(
@@ -436,7 +450,8 @@ class _AddRelationshipState extends State<AddRelationship> {
                       final r = Relationship(
                           personA: widget.currentPerson.uuid,
                           personB: selectedPerson!.uuid,
-                          relation: selectedRelation!.groupID);
+                          relation: selectedRelation!.groupID,
+                          relationshipStatus: selectedRelationshipStatus);
                       Navigator.pop(context, r);
                     },
               child: const Text('Submit'),

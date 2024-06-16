@@ -557,14 +557,18 @@ class $RelationshipTableTable extends RelationshipTable
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES relation_types (group_i_d)'));
-  static const VerificationMeta _exSinceMeta =
-      const VerificationMeta('exSince');
+  static const VerificationMeta _relationshipStatusMeta =
+      const VerificationMeta('relationshipStatus');
   @override
-  late final GeneratedColumn<DateTime> exSince = GeneratedColumn<DateTime>(
-      'ex_since', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  late final GeneratedColumnWithTypeConverter<RelationshipStatus?, int>
+      relationshipStatus = GeneratedColumn<int>(
+              'relationship_status', aliasedName, true,
+              type: DriftSqlType.int, requiredDuringInsert: false)
+          .withConverter<RelationshipStatus?>(
+              $RelationshipTableTable.$converterrelationshipStatusn);
   @override
-  List<GeneratedColumn> get $columns => [personA, personB, relation, exSince];
+  List<GeneratedColumn> get $columns =>
+      [personA, personB, relation, relationshipStatus];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -593,10 +597,7 @@ class $RelationshipTableTable extends RelationshipTable
     } else if (isInserting) {
       context.missing(_relationMeta);
     }
-    if (data.containsKey('ex_since')) {
-      context.handle(_exSinceMeta,
-          exSince.isAcceptableOrUnknown(data['ex_since']!, _exSinceMeta));
-    }
+    context.handle(_relationshipStatusMeta, const VerificationResult.success());
     return context;
   }
 
@@ -612,8 +613,9 @@ class $RelationshipTableTable extends RelationshipTable
           .read(DriftSqlType.int, data['${effectivePrefix}person_b'])!,
       relation: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}relation'])!,
-      exSince: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}ex_since']),
+      relationshipStatus: $RelationshipTableTable.$converterrelationshipStatusn
+          .fromSql(attachedDatabase.typeMapping.read(
+              DriftSqlType.int, data['${effectivePrefix}relationship_status'])),
     );
   }
 
@@ -621,26 +623,35 @@ class $RelationshipTableTable extends RelationshipTable
   $RelationshipTableTable createAlias(String alias) {
     return $RelationshipTableTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<RelationshipStatus, int, int>
+      $converterrelationshipStatus =
+      const EnumIndexConverter<RelationshipStatus>(RelationshipStatus.values);
+  static JsonTypeConverter2<RelationshipStatus?, int?, int?>
+      $converterrelationshipStatusn =
+      JsonTypeConverter2.asNullable($converterrelationshipStatus);
 }
 
 class Relationship extends DataClass implements Insertable<Relationship> {
   final int personA;
   final int personB;
   final int relation;
-  final DateTime? exSince;
+  final RelationshipStatus? relationshipStatus;
   const Relationship(
       {required this.personA,
       required this.personB,
       required this.relation,
-      this.exSince});
+      this.relationshipStatus});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['person_a'] = Variable<int>(personA);
     map['person_b'] = Variable<int>(personB);
     map['relation'] = Variable<int>(relation);
-    if (!nullToAbsent || exSince != null) {
-      map['ex_since'] = Variable<DateTime>(exSince);
+    if (!nullToAbsent || relationshipStatus != null) {
+      map['relationship_status'] = Variable<int>($RelationshipTableTable
+          .$converterrelationshipStatusn
+          .toSql(relationshipStatus));
     }
     return map;
   }
@@ -650,9 +661,9 @@ class Relationship extends DataClass implements Insertable<Relationship> {
       personA: Value(personA),
       personB: Value(personB),
       relation: Value(relation),
-      exSince: exSince == null && nullToAbsent
+      relationshipStatus: relationshipStatus == null && nullToAbsent
           ? const Value.absent()
-          : Value(exSince),
+          : Value(relationshipStatus),
     );
   }
 
@@ -663,7 +674,8 @@ class Relationship extends DataClass implements Insertable<Relationship> {
       personA: serializer.fromJson<int>(json['personA']),
       personB: serializer.fromJson<int>(json['personB']),
       relation: serializer.fromJson<int>(json['relation']),
-      exSince: serializer.fromJson<DateTime?>(json['exSince']),
+      relationshipStatus: $RelationshipTableTable.$converterrelationshipStatusn
+          .fromJson(serializer.fromJson<int?>(json['relationshipStatus'])),
     );
   }
   @override
@@ -673,7 +685,9 @@ class Relationship extends DataClass implements Insertable<Relationship> {
       'personA': serializer.toJson<int>(personA),
       'personB': serializer.toJson<int>(personB),
       'relation': serializer.toJson<int>(relation),
-      'exSince': serializer.toJson<DateTime?>(exSince),
+      'relationshipStatus': serializer.toJson<int?>($RelationshipTableTable
+          .$converterrelationshipStatusn
+          .toJson(relationshipStatus)),
     };
   }
 
@@ -681,12 +695,15 @@ class Relationship extends DataClass implements Insertable<Relationship> {
           {int? personA,
           int? personB,
           int? relation,
-          Value<DateTime?> exSince = const Value.absent()}) =>
+          Value<RelationshipStatus?> relationshipStatus =
+              const Value.absent()}) =>
       Relationship(
         personA: personA ?? this.personA,
         personB: personB ?? this.personB,
         relation: relation ?? this.relation,
-        exSince: exSince.present ? exSince.value : this.exSince,
+        relationshipStatus: relationshipStatus.present
+            ? relationshipStatus.value
+            : this.relationshipStatus,
       );
   @override
   String toString() {
@@ -694,13 +711,14 @@ class Relationship extends DataClass implements Insertable<Relationship> {
           ..write('personA: $personA, ')
           ..write('personB: $personB, ')
           ..write('relation: $relation, ')
-          ..write('exSince: $exSince')
+          ..write('relationshipStatus: $relationshipStatus')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(personA, personB, relation, exSince);
+  int get hashCode =>
+      Object.hash(personA, personB, relation, relationshipStatus);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -708,27 +726,27 @@ class Relationship extends DataClass implements Insertable<Relationship> {
           other.personA == this.personA &&
           other.personB == this.personB &&
           other.relation == this.relation &&
-          other.exSince == this.exSince);
+          other.relationshipStatus == this.relationshipStatus);
 }
 
 class RelationshipTableCompanion extends UpdateCompanion<Relationship> {
   final Value<int> personA;
   final Value<int> personB;
   final Value<int> relation;
-  final Value<DateTime?> exSince;
+  final Value<RelationshipStatus?> relationshipStatus;
   final Value<int> rowid;
   const RelationshipTableCompanion({
     this.personA = const Value.absent(),
     this.personB = const Value.absent(),
     this.relation = const Value.absent(),
-    this.exSince = const Value.absent(),
+    this.relationshipStatus = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RelationshipTableCompanion.insert({
     required int personA,
     required int personB,
     required int relation,
-    this.exSince = const Value.absent(),
+    this.relationshipStatus = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : personA = Value(personA),
         personB = Value(personB),
@@ -737,14 +755,14 @@ class RelationshipTableCompanion extends UpdateCompanion<Relationship> {
     Expression<int>? personA,
     Expression<int>? personB,
     Expression<int>? relation,
-    Expression<DateTime>? exSince,
+    Expression<int>? relationshipStatus,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (personA != null) 'person_a': personA,
       if (personB != null) 'person_b': personB,
       if (relation != null) 'relation': relation,
-      if (exSince != null) 'ex_since': exSince,
+      if (relationshipStatus != null) 'relationship_status': relationshipStatus,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -753,13 +771,13 @@ class RelationshipTableCompanion extends UpdateCompanion<Relationship> {
       {Value<int>? personA,
       Value<int>? personB,
       Value<int>? relation,
-      Value<DateTime?>? exSince,
+      Value<RelationshipStatus?>? relationshipStatus,
       Value<int>? rowid}) {
     return RelationshipTableCompanion(
       personA: personA ?? this.personA,
       personB: personB ?? this.personB,
       relation: relation ?? this.relation,
-      exSince: exSince ?? this.exSince,
+      relationshipStatus: relationshipStatus ?? this.relationshipStatus,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -776,8 +794,10 @@ class RelationshipTableCompanion extends UpdateCompanion<Relationship> {
     if (relation.present) {
       map['relation'] = Variable<int>(relation.value);
     }
-    if (exSince.present) {
-      map['ex_since'] = Variable<DateTime>(exSince.value);
+    if (relationshipStatus.present) {
+      map['relationship_status'] = Variable<int>($RelationshipTableTable
+          .$converterrelationshipStatusn
+          .toSql(relationshipStatus.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -791,7 +811,7 @@ class RelationshipTableCompanion extends UpdateCompanion<Relationship> {
           ..write('personA: $personA, ')
           ..write('personB: $personB, ')
           ..write('relation: $relation, ')
-          ..write('exSince: $exSince, ')
+          ..write('relationshipStatus: $relationshipStatus, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

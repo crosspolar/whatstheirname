@@ -52,6 +52,15 @@ String fullName(Person person) {
   return '$firstName $lastName';
 }
 
+enum RelationshipStatus {
+  ex("Ex"),
+  unconfirmed("Unconfirmed");
+
+  const RelationshipStatus(this.label);
+
+  final String label;
+}
+
 @DataClassName('Relationship')
 class RelationshipTable extends Table {
   IntColumn get personA => integer().references(Persons, #uuid)();
@@ -60,7 +69,7 @@ class RelationshipTable extends Table {
 
   IntColumn get relation => integer().references(RelationTypes, #groupID)();
 
-  DateTimeColumn get exSince => dateTime().nullable()();
+  IntColumn get relationshipStatus => intEnum<RelationshipStatus>().nullable()();
 }
 
 @DataClassName("RelationType")
