@@ -15,17 +15,7 @@ void main() {
           colorSchemeSeed: Colors.green,
         ),
         title: 'Passing Data',
-        home: const PersonOverview(
-            // persons: List.generate(
-            //   5,
-            //       (i) =>
-            //       Person(
-            //         uuid: i.toString(),
-            //         firstName: 'Person $i',
-            //         description: 'A description of Person $i',
-            //       ),
-            // ),
-            ),
+        home: const PersonOverview(),
       ),
     ),
   );
@@ -204,7 +194,7 @@ class DetailScreenState extends State<DetailScreen> {
     final Person personA = await db.personByID(r.personA);
     final Person personB = await db.personByID(r.personB);
 
-    final RelationType relation = await db.relationByID(r.relation);
+    final RelationTypeWithGender relation = await db.relationByGroupIDAndGender(r.relation, personA.gender);
     return relationshipName(fullName(personA), fullName(personB),
         relation.label ?? "no relation name");
   }
@@ -324,7 +314,7 @@ class AddRelationship extends StatefulWidget {
 class _AddRelationshipState extends State<AddRelationship> {
   final TextEditingController relationshipController = TextEditingController();
   final TextEditingController personController = TextEditingController();
-  RelationType? selectedRelation;
+  RelationTypeWithGender? selectedRelation;
   Person? selectedPerson;
 
   @override
@@ -352,10 +342,10 @@ class _AddRelationshipState extends State<AddRelationship> {
                     width: 20,
                   ),
                   FutureBuilder(
-                      future: db.allRelationTypes,
+                      future: db.allRelationTypesForGender(widget.currentPerson.gender),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          return DropdownMenu<RelationType>(
+                          return DropdownMenu<RelationTypeWithGender>(
                             controller: relationshipController,
                             // requestFocusOnTap is enabled/disabled by platforms when it is null.
                             // On mobile platforms, this is false by default. Setting this to true will
@@ -363,21 +353,22 @@ class _AddRelationshipState extends State<AddRelationship> {
                             // afterward. On desktop platforms however, this defaults to true.
                             requestFocusOnTap: true,
                             label: const Text('Relation'),
-                            onSelected: (RelationType? relation) {
+                            onSelected: (RelationTypeWithGender? relation) {
                               setState(() {
                                 selectedRelation = relation;
                               });
                             },
                             dropdownMenuEntries: snapshot.data!
-                                .map<DropdownMenuEntry<RelationType>>(
-                                    (RelationType relation) {
-                              return DropdownMenuEntry<RelationType>(
+                                .map<DropdownMenuEntry<RelationTypeWithGender>>(
+                                    (RelationTypeWithGender relation) {
+                              return DropdownMenuEntry<RelationTypeWithGender>(
                                 value: relation,
                                 label: relation.label ?? "no label",
-                                enabled: relation.label != 'Grey',
-                                style: MenuItemButton.styleFrom(
-                                  foregroundColor: relation.color,
-                                ),
+                                enabled: relation.label != '',
+                                // TODO
+                                // style: MenuItemButton.styleFrom(
+                                //   foregroundColor: relation.color,
+                                // ),
                               );
                             }).toList(),
                           );
@@ -437,7 +428,7 @@ class _AddRelationshipState extends State<AddRelationship> {
                       final r = Relationship(
                           personA: widget.currentPerson.uuid,
                           personB: selectedPerson!.uuid,
-                          relation: selectedRelation!.id);
+                          relation: selectedRelation!.groupID);
                       Navigator.pop(context, r);
                     },
               child: const Text('Submit'),

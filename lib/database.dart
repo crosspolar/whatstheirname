@@ -44,11 +44,6 @@ enum Gender {
   final String label;
 }
 
-// class Gender extends Table {
-//   IntColumn get id => integer().autoIncrement()();
-//   TextColumn get description => text()();
-// }
-
 String fullName(Person person) {
   final firstName = person.firstName;
   final lastName = person.lastName;
@@ -61,31 +56,35 @@ class RelationshipTable extends Table {
 
   IntColumn get personB => integer().references(Persons, #uuid)();
 
-  IntColumn get relation => integer().references(RelationTypes, #id)();
+  IntColumn get relation => integer().references(RelationTypes, #groupID)();
 }
 
 @DataClassName("RelationType")
 class RelationTypes extends Table {
-  @override
-  List<Set<Column>> get uniqueKeys => [
-        {gender, groupID},
-        {id}
-      ];
+  TextColumn get groupLabel => text().unique().nullable()();
 
-  IntColumn get id => integer().autoIncrement()();
-
-  IntColumn get gender => intEnum<Gender>()();
-
-  TextColumn get label => text().unique().nullable()();
-
-  IntColumn get groupID => integer().nullable()();
+  IntColumn get groupID => integer().autoIncrement()();
 
   // We can use type converters to store custom classes in tables.
   // Here, we're storing colors as integers.
   IntColumn get color => integer().map(const ColorConverter()).nullable()();
 }
 
-@DriftDatabase(tables: [Persons, RelationshipTable, RelationTypes])
+@DataClassName("RelationTypeWithGender")
+class RelationTypeWithGenders extends Table {
+  IntColumn get groupID => integer().references(RelationTypes, #groupID)();
+
+  IntColumn get gender => intEnum<Gender>()();
+
+  TextColumn get label => text().unique().nullable()();
+}
+
+@DriftDatabase(tables: [
+  Persons,
+  RelationshipTable,
+  RelationTypes,
+  RelationTypeWithGenders
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -96,6 +95,17 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<RelationType>> get allRelationTypes =>
       select(relationTypes).get();
+
+  // TODO
+  Future<List<RelationTypeWithGender>> allRelationTypesForGender(
+      Gender thisGender) {
+    final query = (select(relationTypes).join([
+      innerJoin(relationTypeWithGenders,
+          relationTypeWithGenders.groupID.equalsExp(relationTypes.groupID))
+    ])
+      ..where(relationTypeWithGenders.gender.equals(thisGender.index)));
+    return query.map((row) => row.readTable(relationTypeWithGenders)).get();
+  }
 
   Future<List<Relationship>> relationsOf(int personId) {
     return (select(relationshipTable)..where((t) => t.personA.equals(personId)))
@@ -108,8 +118,16 @@ class AppDatabase extends _$AppDatabase {
         .getSingle();
   }
 
-  Future<RelationType> relationByID(int relationID) {
-    return (select(relationTypes)..where((tbl) => tbl.id.equals(relationID)))
+  Future<RelationTypeWithGender> relationByGroupIDAndGender(
+      int relationID, Gender gender) {
+    final query = (select(relationTypes).join([
+      innerJoin(relationTypeWithGenders,
+          relationTypeWithGenders.groupID.equalsExp(relationTypes.groupID))
+    ])
+      ..where(relationTypeWithGenders.groupID.equals(relationID) &
+          relationTypeWithGenders.gender.equals(gender.index)));
+    return query
+        .map((row) => row.readTable(relationTypeWithGenders))
         .getSingle();
   }
 
@@ -148,53 +166,50 @@ class AppDatabase extends _$AppDatabase {
       await batch((batch) {
         batch.insertAll(relationTypes, [
           RelationTypesCompanion.insert(
-              gender: Gender.genderNeutral,
-              label: const Value("Parent's sibling"),
+              // gender: Gender.genderNeutral,
+              groupLabel: const Value("Parent's sibling"),
               groupID: const Value(1)),
           RelationTypesCompanion.insert(
-              gender: Gender.male,
-              label: const Value("Uncle"),
-              groupID: const Value(1)),
-          RelationTypesCompanion.insert(
-              gender: Gender.female,
-              label: const Value("Aunt"),
-              groupID: const Value(1)),
-          RelationTypesCompanion.insert(
-              gender: Gender.genderNeutral,
-              label: const Value("Sibling"),
+              // gender: Gender.genderNeutral,
+              groupLabel: const Value("Sibling"),
               groupID: const Value(2)),
           RelationTypesCompanion.insert(
-              gender: Gender.male,
-              label: const Value("Brother"),
-              groupID: const Value(2)),
-          RelationTypesCompanion.insert(
-              gender: Gender.female,
-              label: const Value("Sister"),
-              groupID: const Value(2)),
-          RelationTypesCompanion.insert(
-              gender: Gender.genderNeutral,
-              label: const Value("Child"),
+              // gender: Gender.genderNeutral,
+              groupLabel: const Value("Child"),
               groupID: const Value(3)),
           RelationTypesCompanion.insert(
+              // gender: Gender.genderNeutral,
+              groupLabel: const Value("Parent"),
+              groupID: const Value(4)),
+        ]);
+        batch.insertAll(relationTypeWithGenders, [
+          RelationTypeWithGendersCompanion.insert(
+              groupID: 1,
+              gender: Gender.genderNeutral,
+              label: const Value("Parent's sibling")),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.male, label: const Value("Uncle"), groupID: 1),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.female, label: const Value("Aunt"), groupID: 1),
+          RelationTypeWithGendersCompanion.insert(
+              groupID: 2,
+              gender: Gender.genderNeutral,
+              label: const Value("Sibling")),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.male, label: const Value("Brother"), groupID: 2),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.female, label: const Value("Sister"), groupID: 2),
+          RelationTypeWithGendersCompanion.insert(groupID: 3, gender: Gender.genderNeutral, label: const Value("Child")),
+          RelationTypeWithGendersCompanion.insert(
               gender: Gender.female,
               label: const Value("Daughter"),
-              groupID: const Value(3)),
-          RelationTypesCompanion.insert(
-              gender: Gender.male,
-              label: const Value("Son"),
-              groupID: const Value(3)),
-          RelationTypesCompanion.insert(
-              gender: Gender.genderNeutral,
-              label: const Value("Parent"),
-              groupID: const Value(4)),
-          RelationTypesCompanion.insert(
-              gender: Gender.female,
-              label: const Value("Mother"),
-              groupID: const Value(4)),
-          RelationTypesCompanion.insert(
-              gender: Gender.male,
-              label: const Value("Father"),
-              groupID: const Value(4)),
+              groupID: 3),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.male, label: const Value("Son"), groupID: 3),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.female, label: const Value("Mother"), groupID: 4),
+          RelationTypeWithGendersCompanion.insert(
+              gender: Gender.male, label: const Value("Father"), groupID: 4),
         ]);
       });
     }, beforeOpen: (details) async {
