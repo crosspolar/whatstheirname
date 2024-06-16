@@ -57,6 +57,8 @@ class RelationshipTable extends Table {
   IntColumn get personB => integer().references(Persons, #uuid)();
 
   IntColumn get relation => integer().references(RelationTypes, #groupID)();
+
+  DateTimeColumn get exSince => dateTime().nullable()();
 }
 
 @DataClassName("RelationType")
@@ -199,7 +201,10 @@ class AppDatabase extends _$AppDatabase {
               gender: Gender.male, label: const Value("Brother"), groupID: 2),
           RelationTypeWithGendersCompanion.insert(
               gender: Gender.female, label: const Value("Sister"), groupID: 2),
-          RelationTypeWithGendersCompanion.insert(groupID: 3, gender: Gender.genderNeutral, label: const Value("Child")),
+          RelationTypeWithGendersCompanion.insert(
+              groupID: 3,
+              gender: Gender.genderNeutral,
+              label: const Value("Child")),
           RelationTypeWithGendersCompanion.insert(
               gender: Gender.female,
               label: const Value("Daughter"),
