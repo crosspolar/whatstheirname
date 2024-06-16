@@ -257,12 +257,12 @@ class PersonsCompanion extends UpdateCompanion<Person> {
   }
 }
 
-class $RelationTableTable extends RelationTable
-    with TableInfo<$RelationTableTable, Relation> {
+class $RelationTypesTable extends RelationTypes
+    with TableInfo<$RelationTypesTable, RelationType> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $RelationTableTable(this.attachedDatabase, [this._alias]);
+  $RelationTypesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -277,7 +277,7 @@ class $RelationTableTable extends RelationTable
   late final GeneratedColumnWithTypeConverter<Gender, int> gender =
       GeneratedColumn<int>('gender', aliasedName, false,
               type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<Gender>($RelationTableTable.$convertergender);
+          .withConverter<Gender>($RelationTypesTable.$convertergender);
   static const VerificationMeta _labelMeta = const VerificationMeta('label');
   @override
   late final GeneratedColumn<String> label = GeneratedColumn<String>(
@@ -293,13 +293,13 @@ class $RelationTableTable extends RelationTable
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES relation_table (id)'));
+          GeneratedColumn.constraintIsAlways('REFERENCES relation_types (id)'));
   static const VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
   late final GeneratedColumnWithTypeConverter<Color?, int> color =
       GeneratedColumn<int>('color', aliasedName, true,
               type: DriftSqlType.int, requiredDuringInsert: false)
-          .withConverter<Color?>($RelationTableTable.$convertercolorn);
+          .withConverter<Color?>($RelationTypesTable.$convertercolorn);
   @override
   List<GeneratedColumn> get $columns =>
       [id, gender, label, baseRelation, color];
@@ -307,9 +307,9 @@ class $RelationTableTable extends RelationTable
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'relation_table';
+  static const String $name = 'relation_types';
   @override
-  VerificationContext validateIntegrity(Insertable<Relation> instance,
+  VerificationContext validateIntegrity(Insertable<RelationType> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -334,27 +334,27 @@ class $RelationTableTable extends RelationTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Relation map(Map<String, dynamic> data, {String? tablePrefix}) {
+  RelationType map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Relation(
+    return RelationType(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      gender: $RelationTableTable.$convertergender.fromSql(attachedDatabase
+      gender: $RelationTypesTable.$convertergender.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}gender'])!),
       label: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}label']),
       baseRelation: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}base_relation']),
-      color: $RelationTableTable.$convertercolorn.fromSql(attachedDatabase
+      color: $RelationTypesTable.$convertercolorn.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}color'])),
     );
   }
 
   @override
-  $RelationTableTable createAlias(String alias) {
-    return $RelationTableTable(attachedDatabase, alias);
+  $RelationTypesTable createAlias(String alias) {
+    return $RelationTypesTable(attachedDatabase, alias);
   }
 
   static JsonTypeConverter2<Gender, int, int> $convertergender =
@@ -364,13 +364,13 @@ class $RelationTableTable extends RelationTable
       NullAwareTypeConverter.wrap($convertercolor);
 }
 
-class Relation extends DataClass implements Insertable<Relation> {
+class RelationType extends DataClass implements Insertable<RelationType> {
   final int id;
   final Gender gender;
   final String? label;
   final int? baseRelation;
   final Color? color;
-  const Relation(
+  const RelationType(
       {required this.id,
       required this.gender,
       this.label,
@@ -382,7 +382,7 @@ class Relation extends DataClass implements Insertable<Relation> {
     map['id'] = Variable<int>(id);
     {
       map['gender'] =
-          Variable<int>($RelationTableTable.$convertergender.toSql(gender));
+          Variable<int>($RelationTypesTable.$convertergender.toSql(gender));
     }
     if (!nullToAbsent || label != null) {
       map['label'] = Variable<String>(label);
@@ -392,13 +392,13 @@ class Relation extends DataClass implements Insertable<Relation> {
     }
     if (!nullToAbsent || color != null) {
       map['color'] =
-          Variable<int>($RelationTableTable.$convertercolorn.toSql(color));
+          Variable<int>($RelationTypesTable.$convertercolorn.toSql(color));
     }
     return map;
   }
 
-  RelationTableCompanion toCompanion(bool nullToAbsent) {
-    return RelationTableCompanion(
+  RelationTypesCompanion toCompanion(bool nullToAbsent) {
+    return RelationTypesCompanion(
       id: Value(id),
       gender: Value(gender),
       label:
@@ -411,12 +411,12 @@ class Relation extends DataClass implements Insertable<Relation> {
     );
   }
 
-  factory Relation.fromJson(Map<String, dynamic> json,
+  factory RelationType.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Relation(
+    return RelationType(
       id: serializer.fromJson<int>(json['id']),
-      gender: $RelationTableTable.$convertergender
+      gender: $RelationTypesTable.$convertergender
           .fromJson(serializer.fromJson<int>(json['gender'])),
       label: serializer.fromJson<String?>(json['label']),
       baseRelation: serializer.fromJson<int?>(json['baseRelation']),
@@ -429,20 +429,20 @@ class Relation extends DataClass implements Insertable<Relation> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'gender': serializer
-          .toJson<int>($RelationTableTable.$convertergender.toJson(gender)),
+          .toJson<int>($RelationTypesTable.$convertergender.toJson(gender)),
       'label': serializer.toJson<String?>(label),
       'baseRelation': serializer.toJson<int?>(baseRelation),
       'color': serializer.toJson<Color?>(color),
     };
   }
 
-  Relation copyWith(
+  RelationType copyWith(
           {int? id,
           Gender? gender,
           Value<String?> label = const Value.absent(),
           Value<int?> baseRelation = const Value.absent(),
           Value<Color?> color = const Value.absent()}) =>
-      Relation(
+      RelationType(
         id: id ?? this.id,
         gender: gender ?? this.gender,
         label: label.present ? label.value : this.label,
@@ -452,7 +452,7 @@ class Relation extends DataClass implements Insertable<Relation> {
       );
   @override
   String toString() {
-    return (StringBuffer('Relation(')
+    return (StringBuffer('RelationType(')
           ..write('id: $id, ')
           ..write('gender: $gender, ')
           ..write('label: $label, ')
@@ -467,7 +467,7 @@ class Relation extends DataClass implements Insertable<Relation> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Relation &&
+      (other is RelationType &&
           other.id == this.id &&
           other.gender == this.gender &&
           other.label == this.label &&
@@ -475,27 +475,27 @@ class Relation extends DataClass implements Insertable<Relation> {
           other.color == this.color);
 }
 
-class RelationTableCompanion extends UpdateCompanion<Relation> {
+class RelationTypesCompanion extends UpdateCompanion<RelationType> {
   final Value<int> id;
   final Value<Gender> gender;
   final Value<String?> label;
   final Value<int?> baseRelation;
   final Value<Color?> color;
-  const RelationTableCompanion({
+  const RelationTypesCompanion({
     this.id = const Value.absent(),
     this.gender = const Value.absent(),
     this.label = const Value.absent(),
     this.baseRelation = const Value.absent(),
     this.color = const Value.absent(),
   });
-  RelationTableCompanion.insert({
+  RelationTypesCompanion.insert({
     this.id = const Value.absent(),
     required Gender gender,
     this.label = const Value.absent(),
     this.baseRelation = const Value.absent(),
     this.color = const Value.absent(),
   }) : gender = Value(gender);
-  static Insertable<Relation> custom({
+  static Insertable<RelationType> custom({
     Expression<int>? id,
     Expression<int>? gender,
     Expression<String>? label,
@@ -511,13 +511,13 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
     });
   }
 
-  RelationTableCompanion copyWith(
+  RelationTypesCompanion copyWith(
       {Value<int>? id,
       Value<Gender>? gender,
       Value<String?>? label,
       Value<int?>? baseRelation,
       Value<Color?>? color}) {
-    return RelationTableCompanion(
+    return RelationTypesCompanion(
       id: id ?? this.id,
       gender: gender ?? this.gender,
       label: label ?? this.label,
@@ -534,7 +534,7 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
     }
     if (gender.present) {
       map['gender'] = Variable<int>(
-          $RelationTableTable.$convertergender.toSql(gender.value));
+          $RelationTypesTable.$convertergender.toSql(gender.value));
     }
     if (label.present) {
       map['label'] = Variable<String>(label.value);
@@ -544,14 +544,14 @@ class RelationTableCompanion extends UpdateCompanion<Relation> {
     }
     if (color.present) {
       map['color'] = Variable<int>(
-          $RelationTableTable.$convertercolorn.toSql(color.value));
+          $RelationTypesTable.$convertercolorn.toSql(color.value));
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('RelationTableCompanion(')
+    return (StringBuffer('RelationTypesCompanion(')
           ..write('id: $id, ')
           ..write('gender: $gender, ')
           ..write('label: $label, ')
@@ -594,7 +594,7 @@ class $RelationshipTableTable extends RelationshipTable
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES relation_table (id)'));
+          GeneratedColumn.constraintIsAlways('REFERENCES relation_types (id)'));
   @override
   List<GeneratedColumn> get $columns => [personA, personB, relation];
   @override
@@ -797,7 +797,7 @@ class RelationshipTableCompanion extends UpdateCompanion<Relationship> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $PersonsTable persons = $PersonsTable(this);
-  late final $RelationTableTable relationTable = $RelationTableTable(this);
+  late final $RelationTypesTable relationTypes = $RelationTypesTable(this);
   late final $RelationshipTableTable relationshipTable =
       $RelationshipTableTable(this);
   @override
@@ -805,5 +805,5 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [persons, relationTable, relationshipTable];
+      [persons, relationTypes, relationshipTable];
 }

@@ -200,7 +200,7 @@ class DetailScreenState extends State<DetailScreen> {
     final Person personA = await db.personByID(r.personA);
     final Person personB = await db.personByID(r.personB);
 
-    final Relation relation = await db.relationByID(r.relation);
+    final RelationType relation = await db.relationByID(r.relation);
     return relationshipName(fullName(personA), fullName(personB),
         relation.label ?? "no relation name");
   }
@@ -320,7 +320,7 @@ class AddRelationship extends StatefulWidget {
 class _AddRelationshipState extends State<AddRelationship> {
   final TextEditingController relationshipController = TextEditingController();
   final TextEditingController personController = TextEditingController();
-  Relation? selectedRelation;
+  RelationType? selectedRelation;
   Person? selectedPerson;
 
   @override
@@ -351,7 +351,7 @@ class _AddRelationshipState extends State<AddRelationship> {
                       future: db.allRelationTypes,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          return DropdownMenu<Relation>(
+                          return DropdownMenu<RelationType>(
                             controller: relationshipController,
                             // requestFocusOnTap is enabled/disabled by platforms when it is null.
                             // On mobile platforms, this is false by default. Setting this to true will
@@ -359,15 +359,15 @@ class _AddRelationshipState extends State<AddRelationship> {
                             // afterward. On desktop platforms however, this defaults to true.
                             requestFocusOnTap: true,
                             label: const Text('Relation'),
-                            onSelected: (Relation? relation) {
+                            onSelected: (RelationType? relation) {
                               setState(() {
                                 selectedRelation = relation;
                               });
                             },
                             dropdownMenuEntries: snapshot.data!
-                                .map<DropdownMenuEntry<Relation>>(
-                                    (Relation relation) {
-                              return DropdownMenuEntry<Relation>(
+                                .map<DropdownMenuEntry<RelationType>>(
+                                    (RelationType relation) {
+                              return DropdownMenuEntry<RelationType>(
                                 value: relation,
                                 label: relation.label ?? "no label",
                                 enabled: relation.label != 'Grey',

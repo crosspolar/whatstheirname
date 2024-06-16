@@ -65,11 +65,11 @@ class RelationshipTable extends Table {
 
   IntColumn get personB => integer().references(Persons, #uuid)();
 
-  IntColumn get relation => integer().references(RelationTable, #id)();
+  IntColumn get relation => integer().references(RelationTypes, #id)();
 }
 
-@DataClassName("Relation")
-class RelationTable extends Table {
+@DataClassName("RelationType")
+class RelationTypes extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   IntColumn get gender => intEnum<Gender>()();
@@ -77,14 +77,14 @@ class RelationTable extends Table {
   TextColumn get label => text().unique().nullable()();
 
   IntColumn get baseRelation =>
-      integer().references(RelationTable, #id).nullable()();
+      integer().references(RelationTypes, #id).nullable()();
 
   // We can use type converters to store custom classes in tables.
   // Here, we're storing colors as integers.
   IntColumn get color => integer().map(const ColorConverter()).nullable()();
 }
 
-@DriftDatabase(tables: [Persons, RelationshipTable, RelationTable])
+@DriftDatabase(tables: [Persons, RelationshipTable, RelationTypes])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -93,7 +93,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Person>> get allPersons => select(persons).get();
 
-  Future<List<Relation>> get allRelationTypes => select(relationTable).get();
+  Future<List<RelationType>> get allRelationTypes => select(relationTypes).get();
 
   Future<List<Relationship>> relationsOf(int personId) {
     return (select(relationshipTable)..where((t) => t.personA.equals(personId)))
@@ -106,8 +106,8 @@ class AppDatabase extends _$AppDatabase {
         .getSingle();
   }
 
-  Future<Relation> relationByID(int relationID) {
-    return (select(relationTable)..where((tbl) => tbl.id.equals(relationID)))
+  Future<RelationType> relationByID(int relationID) {
+    return (select(relationTypes)..where((tbl) => tbl.id.equals(relationID)))
         .getSingle();
   }
 
@@ -145,13 +145,13 @@ class AppDatabase extends _$AppDatabase {
         onCreate: (m) async {
       await m.createAll(); // create all tables
       await batch((batch) {
-        batch.insertAll(relationTable, [
-          RelationTableCompanion.insert(id:const Value(1), gender: Gender.genderNeutral, label: const Value("Parent's sibling")),
-          RelationTableCompanion.insert(gender: Gender.male, label:const Value("Uncle"), baseRelation: const Value(1)),
-          RelationTableCompanion.insert(gender: Gender.female, label: const Value("Aunt"), baseRelation: const Value(1)),
-          RelationTableCompanion.insert(id: const Value(4), gender: Gender.genderNeutral, label: const Value("Sibling",)),
-          RelationTableCompanion.insert(gender: Gender.male, label: const Value("Brother"), baseRelation: const Value(4)),
-          RelationTableCompanion.insert(gender: Gender.female, label: const Value("Sister"), baseRelation: const Value(4)),
+        batch.insertAll(relationTypes, [
+          RelationTypesCompanion.insert(id:const Value(1), gender: Gender.genderNeutral, label: const Value("Parent's sibling")),
+          RelationTypesCompanion.insert(gender: Gender.male, label:const Value("Uncle"), baseRelation: const Value(1)),
+          RelationTypesCompanion.insert(gender: Gender.female, label: const Value("Aunt"), baseRelation: const Value(1)),
+          RelationTypesCompanion.insert(id: const Value(4), gender: Gender.genderNeutral, label: const Value("Sibling",)),
+          RelationTypesCompanion.insert(gender: Gender.male, label: const Value("Brother"), baseRelation: const Value(4)),
+          RelationTypesCompanion.insert(gender: Gender.female, label: const Value("Sister"), baseRelation: const Value(4)),
         ]);
       });
     }, beforeOpen: (details) async {
