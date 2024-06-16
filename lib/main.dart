@@ -38,6 +38,10 @@ class PersonOverview extends StatefulWidget {
   PersonOverviewState createState() => PersonOverviewState();
 }
 
+String relationshipName(String personA, String personB, String relation) {
+  return '$personA is $relation of $personB';
+}
+
 class PersonOverviewState extends State<PersonOverview> {
   @override
   void initState() {

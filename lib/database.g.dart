@@ -285,15 +285,12 @@ class $RelationTypesTable extends RelationTypes
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _baseRelationMeta =
-      const VerificationMeta('baseRelation');
+  static const VerificationMeta _groupIDMeta =
+      const VerificationMeta('groupID');
   @override
-  late final GeneratedColumn<int> baseRelation = GeneratedColumn<int>(
-      'base_relation', aliasedName, true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES relation_types (id)'));
+  late final GeneratedColumn<int> groupID = GeneratedColumn<int>(
+      'group_i_d', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
   late final GeneratedColumnWithTypeConverter<Color?, int> color =
@@ -301,8 +298,7 @@ class $RelationTypesTable extends RelationTypes
               type: DriftSqlType.int, requiredDuringInsert: false)
           .withConverter<Color?>($RelationTypesTable.$convertercolorn);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, gender, label, baseRelation, color];
+  List<GeneratedColumn> get $columns => [id, gender, label, groupID, color];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -321,11 +317,9 @@ class $RelationTypesTable extends RelationTypes
       context.handle(
           _labelMeta, label.isAcceptableOrUnknown(data['label']!, _labelMeta));
     }
-    if (data.containsKey('base_relation')) {
-      context.handle(
-          _baseRelationMeta,
-          baseRelation.isAcceptableOrUnknown(
-              data['base_relation']!, _baseRelationMeta));
+    if (data.containsKey('group_i_d')) {
+      context.handle(_groupIDMeta,
+          groupID.isAcceptableOrUnknown(data['group_i_d']!, _groupIDMeta));
     }
     context.handle(_colorMeta, const VerificationResult.success());
     return context;
@@ -333,6 +327,11 @@ class $RelationTypesTable extends RelationTypes
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {gender, groupID},
+        {id},
+      ];
   @override
   RelationType map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -344,8 +343,8 @@ class $RelationTypesTable extends RelationTypes
           .read(DriftSqlType.int, data['${effectivePrefix}gender'])!),
       label: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}label']),
-      baseRelation: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}base_relation']),
+      groupID: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}group_i_d']),
       color: $RelationTypesTable.$convertercolorn.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}color'])),
@@ -368,13 +367,13 @@ class RelationType extends DataClass implements Insertable<RelationType> {
   final int id;
   final Gender gender;
   final String? label;
-  final int? baseRelation;
+  final int? groupID;
   final Color? color;
   const RelationType(
       {required this.id,
       required this.gender,
       this.label,
-      this.baseRelation,
+      this.groupID,
       this.color});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -387,8 +386,8 @@ class RelationType extends DataClass implements Insertable<RelationType> {
     if (!nullToAbsent || label != null) {
       map['label'] = Variable<String>(label);
     }
-    if (!nullToAbsent || baseRelation != null) {
-      map['base_relation'] = Variable<int>(baseRelation);
+    if (!nullToAbsent || groupID != null) {
+      map['group_i_d'] = Variable<int>(groupID);
     }
     if (!nullToAbsent || color != null) {
       map['color'] =
@@ -403,9 +402,9 @@ class RelationType extends DataClass implements Insertable<RelationType> {
       gender: Value(gender),
       label:
           label == null && nullToAbsent ? const Value.absent() : Value(label),
-      baseRelation: baseRelation == null && nullToAbsent
+      groupID: groupID == null && nullToAbsent
           ? const Value.absent()
-          : Value(baseRelation),
+          : Value(groupID),
       color:
           color == null && nullToAbsent ? const Value.absent() : Value(color),
     );
@@ -419,7 +418,7 @@ class RelationType extends DataClass implements Insertable<RelationType> {
       gender: $RelationTypesTable.$convertergender
           .fromJson(serializer.fromJson<int>(json['gender'])),
       label: serializer.fromJson<String?>(json['label']),
-      baseRelation: serializer.fromJson<int?>(json['baseRelation']),
+      groupID: serializer.fromJson<int?>(json['groupID']),
       color: serializer.fromJson<Color?>(json['color']),
     );
   }
@@ -431,7 +430,7 @@ class RelationType extends DataClass implements Insertable<RelationType> {
       'gender': serializer
           .toJson<int>($RelationTypesTable.$convertergender.toJson(gender)),
       'label': serializer.toJson<String?>(label),
-      'baseRelation': serializer.toJson<int?>(baseRelation),
+      'groupID': serializer.toJson<int?>(groupID),
       'color': serializer.toJson<Color?>(color),
     };
   }
@@ -440,14 +439,13 @@ class RelationType extends DataClass implements Insertable<RelationType> {
           {int? id,
           Gender? gender,
           Value<String?> label = const Value.absent(),
-          Value<int?> baseRelation = const Value.absent(),
+          Value<int?> groupID = const Value.absent(),
           Value<Color?> color = const Value.absent()}) =>
       RelationType(
         id: id ?? this.id,
         gender: gender ?? this.gender,
         label: label.present ? label.value : this.label,
-        baseRelation:
-            baseRelation.present ? baseRelation.value : this.baseRelation,
+        groupID: groupID.present ? groupID.value : this.groupID,
         color: color.present ? color.value : this.color,
       );
   @override
@@ -456,14 +454,14 @@ class RelationType extends DataClass implements Insertable<RelationType> {
           ..write('id: $id, ')
           ..write('gender: $gender, ')
           ..write('label: $label, ')
-          ..write('baseRelation: $baseRelation, ')
+          ..write('groupID: $groupID, ')
           ..write('color: $color')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, gender, label, baseRelation, color);
+  int get hashCode => Object.hash(id, gender, label, groupID, color);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -471,7 +469,7 @@ class RelationType extends DataClass implements Insertable<RelationType> {
           other.id == this.id &&
           other.gender == this.gender &&
           other.label == this.label &&
-          other.baseRelation == this.baseRelation &&
+          other.groupID == this.groupID &&
           other.color == this.color);
 }
 
@@ -479,34 +477,34 @@ class RelationTypesCompanion extends UpdateCompanion<RelationType> {
   final Value<int> id;
   final Value<Gender> gender;
   final Value<String?> label;
-  final Value<int?> baseRelation;
+  final Value<int?> groupID;
   final Value<Color?> color;
   const RelationTypesCompanion({
     this.id = const Value.absent(),
     this.gender = const Value.absent(),
     this.label = const Value.absent(),
-    this.baseRelation = const Value.absent(),
+    this.groupID = const Value.absent(),
     this.color = const Value.absent(),
   });
   RelationTypesCompanion.insert({
     this.id = const Value.absent(),
     required Gender gender,
     this.label = const Value.absent(),
-    this.baseRelation = const Value.absent(),
+    this.groupID = const Value.absent(),
     this.color = const Value.absent(),
   }) : gender = Value(gender);
   static Insertable<RelationType> custom({
     Expression<int>? id,
     Expression<int>? gender,
     Expression<String>? label,
-    Expression<int>? baseRelation,
+    Expression<int>? groupID,
     Expression<int>? color,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (gender != null) 'gender': gender,
       if (label != null) 'label': label,
-      if (baseRelation != null) 'base_relation': baseRelation,
+      if (groupID != null) 'group_i_d': groupID,
       if (color != null) 'color': color,
     });
   }
@@ -515,13 +513,13 @@ class RelationTypesCompanion extends UpdateCompanion<RelationType> {
       {Value<int>? id,
       Value<Gender>? gender,
       Value<String?>? label,
-      Value<int?>? baseRelation,
+      Value<int?>? groupID,
       Value<Color?>? color}) {
     return RelationTypesCompanion(
       id: id ?? this.id,
       gender: gender ?? this.gender,
       label: label ?? this.label,
-      baseRelation: baseRelation ?? this.baseRelation,
+      groupID: groupID ?? this.groupID,
       color: color ?? this.color,
     );
   }
@@ -539,8 +537,8 @@ class RelationTypesCompanion extends UpdateCompanion<RelationType> {
     if (label.present) {
       map['label'] = Variable<String>(label.value);
     }
-    if (baseRelation.present) {
-      map['base_relation'] = Variable<int>(baseRelation.value);
+    if (groupID.present) {
+      map['group_i_d'] = Variable<int>(groupID.value);
     }
     if (color.present) {
       map['color'] = Variable<int>(
@@ -555,7 +553,7 @@ class RelationTypesCompanion extends UpdateCompanion<RelationType> {
           ..write('id: $id, ')
           ..write('gender: $gender, ')
           ..write('label: $label, ')
-          ..write('baseRelation: $baseRelation, ')
+          ..write('groupID: $groupID, ')
           ..write('color: $color')
           ..write(')'))
         .toString();

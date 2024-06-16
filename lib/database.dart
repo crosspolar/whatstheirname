@@ -55,10 +55,6 @@ String fullName(Person person) {
   return '$firstName $lastName';
 }
 
-String relationshipName(String personA, String personB, String relation) {
-  return '$personA is $relation of $personB';
-}
-
 @DataClassName('Relationship')
 class RelationshipTable extends Table {
   IntColumn get personA => integer().references(Persons, #uuid)();
@@ -70,14 +66,19 @@ class RelationshipTable extends Table {
 
 @DataClassName("RelationType")
 class RelationTypes extends Table {
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {gender, groupID},
+        {id}
+      ];
+
   IntColumn get id => integer().autoIncrement()();
 
   IntColumn get gender => intEnum<Gender>()();
 
   TextColumn get label => text().unique().nullable()();
 
-  IntColumn get baseRelation =>
-      integer().references(RelationTypes, #id).nullable()();
+  IntColumn get groupID => integer().nullable()();
 
   // We can use type converters to store custom classes in tables.
   // Here, we're storing colors as integers.
@@ -93,7 +94,8 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Person>> get allPersons => select(persons).get();
 
-  Future<List<RelationType>> get allRelationTypes => select(relationTypes).get();
+  Future<List<RelationType>> get allRelationTypes =>
+      select(relationTypes).get();
 
   Future<List<Relationship>> relationsOf(int personId) {
     return (select(relationshipTable)..where((t) => t.personA.equals(personId)))
@@ -111,7 +113,7 @@ class AppDatabase extends _$AppDatabase {
         .getSingle();
   }
 
-    // returns the generated id
+  // returns the generated id
   Future<int> addRelationship(RelationshipTableCompanion entry) {
     return into(relationshipTable).insert(entry);
   }
@@ -141,24 +143,63 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration {
-    return MigrationStrategy(
-        onCreate: (m) async {
+    return MigrationStrategy(onCreate: (m) async {
       await m.createAll(); // create all tables
       await batch((batch) {
         batch.insertAll(relationTypes, [
-          RelationTypesCompanion.insert(id:const Value(1), gender: Gender.genderNeutral, label: const Value("Parent's sibling")),
-          RelationTypesCompanion.insert(gender: Gender.male, label:const Value("Uncle"), baseRelation: const Value(1)),
-          RelationTypesCompanion.insert(gender: Gender.female, label: const Value("Aunt"), baseRelation: const Value(1)),
-          RelationTypesCompanion.insert(id: const Value(4), gender: Gender.genderNeutral, label: const Value("Sibling",)),
-          RelationTypesCompanion.insert(gender: Gender.male, label: const Value("Brother"), baseRelation: const Value(4)),
-          RelationTypesCompanion.insert(gender: Gender.female, label: const Value("Sister"), baseRelation: const Value(4)),
+          RelationTypesCompanion.insert(
+              gender: Gender.genderNeutral,
+              label: const Value("Parent's sibling"),
+              groupID: const Value(1)),
+          RelationTypesCompanion.insert(
+              gender: Gender.male,
+              label: const Value("Uncle"),
+              groupID: const Value(1)),
+          RelationTypesCompanion.insert(
+              gender: Gender.female,
+              label: const Value("Aunt"),
+              groupID: const Value(1)),
+          RelationTypesCompanion.insert(
+              gender: Gender.genderNeutral,
+              label: const Value("Sibling"),
+              groupID: const Value(2)),
+          RelationTypesCompanion.insert(
+              gender: Gender.male,
+              label: const Value("Brother"),
+              groupID: const Value(2)),
+          RelationTypesCompanion.insert(
+              gender: Gender.female,
+              label: const Value("Sister"),
+              groupID: const Value(2)),
+          RelationTypesCompanion.insert(
+              gender: Gender.genderNeutral,
+              label: const Value("Child"),
+              groupID: const Value(3)),
+          RelationTypesCompanion.insert(
+              gender: Gender.female,
+              label: const Value("Daughter"),
+              groupID: const Value(3)),
+          RelationTypesCompanion.insert(
+              gender: Gender.male,
+              label: const Value("Son"),
+              groupID: const Value(3)),
+          RelationTypesCompanion.insert(
+              gender: Gender.genderNeutral,
+              label: const Value("Parent"),
+              groupID: const Value(4)),
+          RelationTypesCompanion.insert(
+              gender: Gender.female,
+              label: const Value("Mother"),
+              groupID: const Value(4)),
+          RelationTypesCompanion.insert(
+              gender: Gender.male,
+              label: const Value("Father"),
+              groupID: const Value(4)),
         ]);
       });
     }, beforeOpen: (details) async {
       // Make sure that foreign keys are enabled
       await customStatement('PRAGMA foreign_keys = ON');
-
-
     });
   }
 }
