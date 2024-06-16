@@ -327,7 +327,7 @@ class _AddRelationshipState extends State<AddRelationship> {
     final db = Provider.of<AppDatabase>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Relationship for ${widget.currentPerson.toString()}"),
+        title: Text("Relationship for ${fullName(widget.currentPerson)}"),
       ),
       body: SafeArea(
         child: Column(
@@ -402,10 +402,10 @@ class _AddRelationshipState extends State<AddRelationship> {
                           },
                           dropdownMenuEntries:
                               snapshot.data!.map<DropdownMenuEntry<Person>>(
-                            (Person icon) {
+                            (Person person) {
                               return DropdownMenuEntry<Person>(
-                                value: icon,
-                                label: icon.toString(),
+                                value: person,
+                                label: fullName(person),
                               );
                             },
                           ).toList(),
