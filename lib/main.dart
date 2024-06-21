@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 import 'database.dart';
 
@@ -19,6 +20,96 @@ void main() {
       ),
     ),
   );
+}
+
+class ImportContacts extends StatefulWidget {
+  const ImportContacts({super.key});
+
+  @override
+  ImportContactsState createState() => ImportContactsState();
+}
+
+class ImportContactsState extends State<ImportContacts> {
+  List<Contact>? _contacts;
+  List<bool>? _isChecked;
+  bool _permissionDenied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchContacts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final db = Provider.of<AppDatabase>(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Import Contacts')),
+      body: _body(),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.check),
+        onPressed: () async {
+          if (_contacts != null) {
+            for (final (index, contact) in _contacts!.indexed) {
+              if (_isChecked![index]) {
+                // Workaround since firstname seems empty in google contacts FIXME
+                final name = contact.displayName;
+                String lastName = "";
+                String firstName = "";
+                if (name.split(" ").length > 1) {
+                  lastName = name.substring(name.lastIndexOf(" ") + 1);
+                  firstName = name.substring(0, name.lastIndexOf(' '));
+                } else {
+                  firstName = name;
+                }
+                // Workaround Ende
+                final p = PersonsCompanion(
+                  contactID: drift.Value(contact.id),
+                  gender: const drift.Value(Gender.genderNeutral),
+                  firstName: drift.Value(firstName),
+                  lastName: drift.Value(lastName),
+                );
+                db.addPerson(p);
+              }
+            }
+          }
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  Widget _body() {
+    if (_permissionDenied) {
+      return const Center(child: Text('Permission denied'));
+    }
+    if (_contacts == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return ListView.builder(
+        itemCount: _contacts!.length,
+        itemBuilder: (context, i) => CheckboxListTile(
+              title: Text(_contacts![i].displayName),
+              value: _isChecked![i],
+              onChanged: (val) {
+                setState(() {
+                  _isChecked![i] = val!;
+                });
+              },
+            ));
+  }
+
+  Future _fetchContacts() async {
+    if (!await FlutterContacts.requestPermission(readonly: true)) {
+      setState(() => _permissionDenied = true);
+    } else {
+      final contacts = await FlutterContacts.getContacts();
+      setState(() {
+        _contacts = contacts;
+        _isChecked = List.generate(contacts.length, (index) => true);
+      });
+    }
+  }
 }
 
 class PersonOverview extends StatefulWidget {
@@ -70,6 +161,7 @@ class PersonOverviewState extends State<PersonOverview> {
               },
             );
           } else {
+            // TODO Column with text and Button to ImportContacts
             return const Text("Enter first person");
           }
         });
@@ -81,6 +173,21 @@ class PersonOverviewState extends State<PersonOverview> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Persons'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.import_contacts),
+            tooltip: 'Import contacts',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ImportContacts(),
+                ),
+              );
+              setState(() {});
+            },
+          ),
+        ],
       ),
       body: buildListView(persons),
       floatingActionButton: FloatingActionButton(
@@ -134,6 +241,7 @@ class DetailScreenState extends State<DetailScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: <Widget>[
+            Text(person.toString()),
             Text(fullName(person)),
             Text(person.gender.label),
             Text(person.description ?? ""),
