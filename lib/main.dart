@@ -145,7 +145,9 @@ class PersonOverviewState extends State<PersonOverview> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  leading: const Icon(Icons.person),
+                  leading: snapshot.data![index].contactID == null
+                      ? const Icon(Icons.person_outline)
+                      : const Icon(Icons.person),
                   title: Text(fullName(snapshot.data![index])),
                   onLongPress: () async {
                     var personToEdit = snapshot.data![index];
@@ -202,7 +204,7 @@ class PersonOverviewState extends State<PersonOverview> {
       ),
       body: buildListView(persons),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.person_add),
         onPressed: () async {
           await Navigator.push(
             context,
@@ -261,7 +263,7 @@ class DetailScreenState extends State<DetailScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.group_add),
         onPressed: () async {
           final result = await Navigator.push<Relationship>(
             context,
@@ -283,7 +285,7 @@ class DetailScreenState extends State<DetailScreen> {
     return ListView.builder(
       itemCount: relationships.length,
       itemBuilder: (context, index) => ListTile(
-        leading: const Icon(Icons.supervisor_account),
+        leading: const Icon(Icons.group),
         title: FutureBuilder<String>(
             future: relationNameBuild(relationships[index]),
             builder: (context2, snapshot2) {
