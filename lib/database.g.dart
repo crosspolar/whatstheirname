@@ -22,7 +22,9 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
   @override
   late final GeneratedColumn<String> contactId = GeneratedColumn<String>(
       'contact_id', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
   static const VerificationMeta _firstNameMeta =
       const VerificationMeta('firstName');
   @override

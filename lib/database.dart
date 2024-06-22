@@ -16,7 +16,7 @@ part 'database.g.dart';
 class Persons extends Table {
   IntColumn get uuid => integer().autoIncrement()();
 
-  TextColumn get contactId => text().nullable()();
+  TextColumn get contactId => text().nullable().unique()();
 
   TextColumn get firstName => text()();
 

@@ -111,10 +111,12 @@ class ImportContactsState extends State<ImportContacts> {
       setState(() => _permissionDenied = true);
     } else {
       final contacts = await FlutterContacts.getContacts();
-      final person = await knownPersons();
+      final persons = await knownPersons();
+      final List<String> allKnownIds =
+          persons.map((person) => person.contactId ?? "").toList();
       // Filter known contacts
-      contacts
-          .removeWhere((item) => person.every((b) => item.id == b.contactId));
+      contacts.removeWhere((Contact u) => allKnownIds.contains(u.id));
+
       setState(() {
         _contacts = contacts;
         _isChecked = List.generate(contacts.length, (index) => true);
