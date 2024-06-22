@@ -1,6 +1,6 @@
 {
-    "name": "whatshisname",
-    "short_name": "whatshisname",
+    "name": "whatstheirname",
+    "short_name": "whatstheirname",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

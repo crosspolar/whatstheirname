@@ -1,4 +1,4 @@
-# whatshisname
+# whatstheirname
 
 Remember your friends!
 
