@@ -370,10 +370,14 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                 children: [
                   TextFormField(
                     autofocus: true,
+                    // disable name-fields of contact is from address book
+                    readOnly: isUpdate && widget.person!.contactId != null,
                     decoration: const InputDecoration(hintText: 'First Name'),
                     controller: firstNameController,
                   ),
                   TextFormField(
+                    // disable name-fields of contact is from address book
+                    readOnly: isUpdate && widget.person!.contactId != null,
                     decoration: const InputDecoration(hintText: 'Last Name'),
                     controller: lastNameController,
                   ),
