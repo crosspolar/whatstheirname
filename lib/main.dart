@@ -37,7 +37,6 @@ class ImportContactsState extends State<ImportContacts> {
   @override
   void initState() {
     super.initState();
-
     _fetchContacts();
   }
 
@@ -101,7 +100,9 @@ class ImportContactsState extends State<ImportContacts> {
   }
 
   Future<List<Person>> knownPersons() async {
-    final persons = await Provider.of<AppDatabase>(context).allPersons;
+    // https://stackoverflow.com/a/64950700
+    final persons =
+        await Provider.of<AppDatabase>(context, listen: false).allPersons;
     return persons;
   }
 
@@ -111,7 +112,7 @@ class ImportContactsState extends State<ImportContacts> {
     } else {
       final contacts = await FlutterContacts.getContacts();
       final person = await knownPersons();
-      //Filter known contacts
+      // Filter known contacts
       contacts
           .removeWhere((item) => person.every((b) => item.id == b.contactID));
       setState(() {
