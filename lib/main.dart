@@ -64,7 +64,7 @@ class ImportContactsState extends State<ImportContacts> {
                 }
                 // Workaround Ende
                 final p = PersonsCompanion(
-                  contactID: drift.Value(contact.id),
+                  contactId: drift.Value(contact.id),
                   gender: const drift.Value(Gender.genderNeutral),
                   firstName: drift.Value(firstName),
                   lastName: drift.Value(lastName),
@@ -114,7 +114,7 @@ class ImportContactsState extends State<ImportContacts> {
       final person = await knownPersons();
       // Filter known contacts
       contacts
-          .removeWhere((item) => person.every((b) => item.id == b.contactID));
+          .removeWhere((item) => person.every((b) => item.id == b.contactId));
       setState(() {
         _contacts = contacts;
         _isChecked = List.generate(contacts.length, (index) => true);
@@ -145,7 +145,7 @@ class PersonOverviewState extends State<PersonOverview> {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  leading: snapshot.data![index].contactID == null
+                  leading: snapshot.data![index].contactId == null
                       ? const Icon(Icons.person_outline)
                       : const Icon(Icons.person),
                   title: Text(fullName(snapshot.data![index])),
@@ -398,6 +398,7 @@ class AddUpdatePersonPageState extends State<AddUpdatePersonPage> {
                         if (isUpdate) {
                           final p = Person(
                             uuid: widget.person!.uuid,
+                            contactId: widget.person!.contactId,
                             gender: selectedGender ?? Gender.genderNeutral,
                             firstName: firstNameController.text,
                             lastName: lastNameController.text,
@@ -463,54 +464,46 @@ class _AddRelationshipState extends State<AddRelationship> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Text("${widget.currentPerson.firstName} is"),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  FutureBuilder(
-                      future: db.allRelationTypesForGender(
-                          widget.currentPerson.gender),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return DropdownMenu<RelationTypeWithGender>(
-                            controller: relationshipController,
-                            // requestFocusOnTap is enabled/disabled by platforms when it is null.
-                            // On mobile platforms, this is false by default. Setting this to true will
-                            // trigger focus request on the text field and virtual keyboard will appear
-                            // afterward. On desktop platforms however, this defaults to true.
-                            requestFocusOnTap: true,
-                            label: const Text('Relation'),
-                            onSelected: (RelationTypeWithGender? relation) {
-                              setState(() {
-                                selectedRelation = relation;
-                              });
-                            },
-                            dropdownMenuEntries: snapshot.data!
-                                .map<DropdownMenuEntry<RelationTypeWithGender>>(
+                  Expanded(
+                      child: FutureBuilder(
+                          future: db.allRelationTypesForGender(
+                              widget.currentPerson.gender),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return DropdownMenu<RelationTypeWithGender>(
+                                controller: relationshipController,
+                                requestFocusOnTap: true,
+                                label: const Text('Relation'),
+                                onSelected: (RelationTypeWithGender? relation) {
+                                  setState(() {
+                                    selectedRelation = relation;
+                                  });
+                                },
+                                dropdownMenuEntries: snapshot.data!.map<
+                                        DropdownMenuEntry<
+                                            RelationTypeWithGender>>(
                                     (RelationTypeWithGender relation) {
-                              return DropdownMenuEntry<RelationTypeWithGender>(
-                                value: relation,
-                                label: relation.label ?? "no label",
-                                enabled: relation.label != '',
-                                // TODO
-                                // style: MenuItemButton.styleFrom(
-                                //   foregroundColor: relation.color,
-                                // ),
+                                  return DropdownMenuEntry<
+                                      RelationTypeWithGender>(
+                                    value: relation,
+                                    label: "${relation.label} of",
+                                    enabled: relation.label != '',
+                                    // TODO
+                                    // style: MenuItemButton.styleFrom(
+                                    //   foregroundColor: relation.color,
+                                    // ),
+                                  );
+                                }).toList(),
                               );
-                            }).toList(),
-                          );
-                        } else {
-                          return const Text("No Data here");
-                        }
-                      }),
-                  const SizedBox(width: 20),
-                  const Text(" of "),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  FutureBuilder(
+                            } else {
+                              return const Text("No Data here");
+                            }
+                          })),
+                  Expanded(
+                      child: FutureBuilder(
                     future: db.allPersons,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
@@ -543,12 +536,13 @@ class _AddRelationshipState extends State<AddRelationship> {
                         return const Text("No Data here");
                       }
                     },
-                  ),
+                  )),
                 ],
               ),
             ),
             DropdownButton<RelationshipStatus>(
               value: selectedRelationshipStatus,
+              hint: const Text("Status"),
               onChanged: (RelationshipStatus? relationshipStatus) {
                 setState(() {
                   selectedRelationshipStatus = relationshipStatus;
@@ -562,7 +556,9 @@ class _AddRelationshipState extends State<AddRelationship> {
               }).toList(),
             ),
             if (selectedRelation == null || selectedPerson == null)
-              const Text('Please select a relation and a person.'),
+              const Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Text('Please select a relation and a person.')),
             ElevatedButton(
               onPressed: (selectedRelation == null || selectedPerson == null)
                   ? null
