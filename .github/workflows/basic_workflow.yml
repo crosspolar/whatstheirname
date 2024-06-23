@@ -24,15 +24,26 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
+      - name: Install Android dependencies
+        if: matrix.target == 'Android'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.16.4
-          cache: true
-      - run: flutter --version
+#          flutter-version: 3.16.4
+#          cache: true
+      - run: flutter config --no-analytics
       - run: flutter pub get
       - run: flutter analyze
 #      - run: flutter test
-      - run: flutter build apk
-      - run: flutter build appbundle
+      - name: Build Android APK
+        run: flutter build apk
+      - name: Publish Android Artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: release-apk
+          path: build/app/outputs/apk/release/app-release.apk
